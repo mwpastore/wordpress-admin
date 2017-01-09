@@ -4,7 +4,7 @@
 umask 077
 
 declare -A DUMPFILES=(
-  [pow_legacy]=
+  [legacy]=
 )
 BACKUP_DIR=/var/backups/mysql
 RETAIN_DAYS=14
@@ -88,7 +88,7 @@ mysql --execute="KILL ${sleep_id};"
 wait $waitpid || true
 
 echo "* Creating portable snapshot(s)"
-snapshot pow_legacy
+#snapshot legacy
 
 for database in ${!DUMPFILES[*]} ; do
   if [[ -f $BACKUP_DIR/${database}.last_size ]] ; then

@@ -1,9 +1,0 @@
----
-dependencies:
-  - role: wordpress
-    name: pow_legacy
-    php_ip: 172.18.0.2
-    caddy_domain: www.powproductphotography.com
-    caddy_search: '(?:www\.)?pow(?:product)?photograph(?:y|er)\.com'
-    caddy_allow: 2603:300a:30a:af00::/56
-    caddy_ie8: yes

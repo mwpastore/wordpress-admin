@@ -1,3 +1,0 @@
----
-- name: restart pow_legacy
-  service: name=wordpress-pow_legacy state=restarted
