@@ -1,11 +1,4 @@
 ---
-- docker_network:
-    name: wordpress
-    driver_options:
-      com.docker.network.bridge.name: docker1
-    ipam_options:
-      subnet: 172.18.0.0/16
-
 - file:
     path: "{{ caddy_root }}/{{ item }}"
     state: directory

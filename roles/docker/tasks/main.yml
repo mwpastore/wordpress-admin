@@ -39,3 +39,10 @@
     - restart docker
 
 - service: name=docker state=started enabled=yes
+
+- docker_network:
+    name: wordpress
+    driver_options:
+      com.docker.network.bridge.name: docker1
+    ipam_options:
+      subnet: 172.18.0.0/16
