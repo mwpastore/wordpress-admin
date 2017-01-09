@@ -1,4 +1,12 @@
 ---
+- mysql_db:
+    name: "{{ db_name }}"
+
+- mysql_user:
+    name: "{{ db_name }}"
+    password: "{{ _mysql.passwords[db_name] }}"
+    priv: "{{ db_name }}.*:ALL"
+
 - file:
     path: "{{ caddy_root }}/{{ item }}"
     state: directory

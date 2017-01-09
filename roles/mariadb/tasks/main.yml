@@ -26,14 +26,6 @@
 
 - template: dest=/root/.my.cnf src=my.cnf.j2 mode=0600
 
-- mysql_db:
-    name: "{{ db_name }}"
-
-- mysql_user:
-    name: "{{ db_name }}"
-    password: "{{ _mysql.passwords[db_name] }}"
-    priv: "{{ db_name }}.*:ALL"
-
 - service: name=mariadb state=started enabled=yes
 
 - file: path=/var/backups/mysql state=directory mode=0750 owner=root group=users
