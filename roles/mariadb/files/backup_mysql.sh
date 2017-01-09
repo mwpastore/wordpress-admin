@@ -5,6 +5,7 @@ umask 077
 
 declare -A DUMPFILES=(
   [legacy]=
+  [newdev]=
 )
 BACKUP_DIR=/var/backups/mysql
 RETAIN_DAYS=14
@@ -89,6 +90,7 @@ wait $waitpid || true
 
 echo "* Creating portable snapshot(s)"
 #snapshot legacy
+#snapshot newdev
 
 for database in ${!DUMPFILES[*]} ; do
   if [[ -f $BACKUP_DIR/${database}.last_size ]] ; then
