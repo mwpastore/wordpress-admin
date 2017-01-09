@@ -1,0 +1,10 @@
+---
+- apt: name={{ item }}
+  with_items:
+    - php7.0-fpm
+    - php7.0-curl
+    - php7.0-mbstring
+    - php7.0-mysql
+  notify: reload php
+
+- service: name=php7.0-fpm state=started enabled=yes

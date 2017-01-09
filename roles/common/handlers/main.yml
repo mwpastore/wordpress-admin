@@ -1,0 +1,9 @@
+---
+- name: reload systemd
+  command: systemctl daemon-reload
+
+- name: reconfigure tzdata
+  command: dpkg-reconfigure -f noninteractive tzdata
+
+- name: update apt cache
+  apt: update_cache=yes

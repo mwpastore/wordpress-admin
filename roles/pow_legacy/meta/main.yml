@@ -1,0 +1,18 @@
+---
+dependencies:
+  - role: wordpress
+    name: pow_legacy
+    php: 7.0
+    ip: 172.18.0.2
+    db: "{{ name }}"
+    root: /var/www/{{ name }}
+    email: "{{ admin_email }}"
+    domain: www.powproductphotography.com
+    search: '(?:www\.)?pow(?:product)?photograph(?:y|er)\.com'
+    allow: 2603:300a:30a:af00::/56
+    xmlrpc: no
+    users: no
+    ie8: yes
+    postfix:
+      relayhost: smtp.mailgun.org
+      relaytls: yes

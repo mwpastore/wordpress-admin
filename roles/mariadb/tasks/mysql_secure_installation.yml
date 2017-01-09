@@ -1,0 +1,12 @@
+---
+- expect:
+    command: mysql_secure_installation
+    responses:
+      "VALIDATE PASSWORD PLUGIN" : N
+      "Enter current password for root": ""
+      "Set root password": Y
+      "[Nn]ew password": "{{ _mysql.passwords.root }}"
+      "Remove anonymous users": Y
+      "Disallow root login remotely": Y
+      "Remove test database and access to it": Y
+      "Reload privilege tables now": Y

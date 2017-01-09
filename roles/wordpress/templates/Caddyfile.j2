@@ -1,0 +1,115 @@
+#jinja2: trim_blocks: False
+{{ domain }} {
+  tls {{ email }} {%- if ie8 %} {
+    protocols tls1.0 tls1.2
+  } {%- endif %}
+
+  log / {{ root }}/logs/access.log "{combined}" {
+    rotate {
+      size 100 # rotate after 100 MB
+      age  14  # keep log files for 14 days
+      keep 10  # keep at most 10 log files
+    }
+  }
+
+  {% if allow -%}
+  ipfilter /wp-admin {%- if not users %} /wp-login.php {%- endif %} {
+    rule allow
+    ip {{ allow }}
+    strict
+  }
+
+  ipfilter /wp-admin/admin-ajax.php {
+    rule block
+  }
+  {%- endif %}
+
+  ratelimit /wp-login.php 5 7 minute
+
+  proxy / localhost:6081 {
+    transparent
+  }
+}
+
+{{ domain }}:2020 {
+  bind localhost
+
+  tls off
+
+  proxy / localhost:2021 {
+    # The Host header gets unset coming into this vhost, so re-set it here.
+    # Other headers such as X-Forwarded-Proto will be passed-thru as-is.
+    header_upstream Host {host}
+
+    {% if not xmlrpc -%}
+    # XML-RPC is disabled, so delete the header that points to it.
+    header_downstream -X-Pingback
+    {%- endif %}
+
+    # Let Varnish re-count the bytes because `filter' does the wrong thing. :c
+    header_downstream -Content-Length
+  }
+
+  filter rule {
+    content_type (?:text|javascript)
+    search_pattern http://{{ search }}
+    replacement https://{{ domain }}
+  }
+}
+
+{{ domain }}:2021 {
+  bind localhost
+
+  tls off
+
+  errors {
+    log {{ root }}/logs/error.log {
+      size 100 # rotate after 100 MB
+      age  14  # keep log files for 14 days
+      keep 10  # keep at most 10 log files
+    }
+  }
+
+  root {{ root }}/wordpress
+
+  internal /.sucuriquarantine
+
+  internal /wp-content/updraft
+  internal /wp-content/uploads/pb_backupbuddy/fileoptions
+  internal /wp-content/uploads/sucuri
+
+  internal /wp-config.php
+  {% if not xmlrpc -%}
+  internal /xmlrpc.php
+  {%- endif %}
+
+  header /downloads Cache-Control "public, max-age=2592000, s-max-age=86400"
+  header /wp-content Cache-Control "public, max-age=2592000, s-max-age=86400"
+  header /wp-includes Cache-Control "public, max-age=2592000, s-max-age=86400"
+
+  rewrite {
+    if {path} not_match ^/wp-admin
+    to {path} {path}/ /index.php?_url={uri}
+  }
+
+  rewrite /wp-content {
+    ext .php
+    to /index.php
+  }
+
+  rewrite /wp-content/plugins/sucuri-scanner {
+    ext !.gif !.jpeg !.jpg !.png !.css !.js
+    to /index.php
+  }
+
+  rewrite /wp-includes {
+    ext .php
+    if {file} not wp-tinymce.php
+    if {file} not ms-files.php
+    to /index.php
+  }
+
+  fastcgi / {{ ip }}:9000 php {
+    root /var/www/html
+  }
+}

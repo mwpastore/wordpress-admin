@@ -1,0 +1,13 @@
+---
+- group:
+    name: www-data
+    gid: 82
+
+- user:
+    name: www-data
+    uid: 82
+    group: www-data
+    home: /home/caddy
+    shell: /usr/sbin/nologin
+    system: yes
+    createhome: yes

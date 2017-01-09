@@ -1,0 +1,50 @@
+---
+- apt: name={{ item }} state=absent purge=yes
+  with_items:
+    - grub-pc
+    - linux-image-generic
+    - linux-image-virtual
+    - lvm2
+    - lxcfs
+    - mdadm
+    - open-iscsi
+    - snapd
+  register: remove_result
+
+# autoremove in apt module doesn't work unless you specify a package name?
+- command: apt-get -y autoremove --purge
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  when: remove_result.changed
+  register: autoremove_result
+  changed_when: "'The following packages will be REMOVED' in autoremove_result.stdout"
+
+- apt: upgrade=dist update_cache=yes cache_valid_time=1800
+
+- apt: name={{ item }}
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - htop
+    - landscape-common
+    - software-properties-common
+    - vim-nox
+
+- file: src=/usr/share/zoneinfo/Etc/UTC dest=/etc/localtime state=link force=yes
+  notify: reconfigure tzdata
+
+- hostname: name={{ inventory_hostname }}
+
+- lineinfile:
+    dest: /etc/hosts
+    regexp: '^127.0.1.1'
+    state: absent
+
+- lineinfile:
+    dest: /etc/hosts
+    regexp: "^{{ hostvars[item]['ansible_ssh_host'] }}"
+    line: "{{ hostvars[item]['ansible_ssh_host'] }} {{ item }}.{{ ansible_domain }} {{ item }}"
+    insertafter: "^127.0.0.1"
+  with_items: "{{ groups['all'] }}"
+
+- copy: src=zz-reboot-required dest=/etc/cron.daily mode=0755 owner=root group=root

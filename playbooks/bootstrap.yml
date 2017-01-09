@@ -1,0 +1,75 @@
+---
+##
+# Want to do just a new host and not all the hosts? Use the -l (--limit=)
+# option.
+#
+#   ansible-playbook bootstrap.yml -l new-host
+#
+# Add -k if the root account is password-protected.
+#
+# You may need to start it without and then resume with ansible_ssh_user as
+# described below.
+#
+# Otherwise, if it's not working, maybe the server was already bootstrapped?
+# If you're just trying to create new users and/or update public keys, you can
+# override the remote user on the command-line:
+#
+#   ansible-playbook bootstrap.yml -e ansible_ssh_user=$USER
+#
+- hosts: all
+  gather_facts: no
+  vars:
+    ansible_ssh_user: root
+  tasks:
+    - name: Install Python 2.x and APT module
+      local_action: command ssh {{ ansible_ssh_user }}@{{ ansible_ssh_host }} {{ 'sudo' if ansible_ssh_user != 'root' else '' }} apt -yq install python python-apt
+      register: apt
+      changed_when: "'stdout' in apt and 'packages will be installed' in apt.stdout"
+
+- hosts: all
+  vars_files:
+    - ../users.yml
+  vars:
+    ansible_ssh_user: root
+  become: "{{ 'no' if ansible_ssh_user == 'root' else 'yes' }}"
+  handlers:
+    - name: Restart SSHd
+      service:
+        name: ssh
+        state: restarted
+  tasks:
+    - name: Ensure passwordless sudo for members of the sudo group
+      lineinfile:
+        dest: /etc/sudoers
+        regexp: '^(%sudo\s+ALL=\(ALL:ALL\)\s+)(ALL)$'
+        line: '\1NOPASSWD:\2'
+        backrefs: yes
+        validate: 'visudo -cf %s'
+    - name: Create or update users
+      user:
+        name: "{{ item.username }}"
+        comment: "{{ item.fullname }}"
+        uid: "{{ item.uid }}"
+        shell: /bin/bash
+        group: users
+        groups: sudo{{ ',' + item.groups if 'groups' in item else '' }}
+      with_items: "{{ users }}"
+    - name: Create or update users' authorized_keys from GitHub
+      authorized_key:
+        user: "{{ item.username }}"
+        key: https://github.com/{{ item.github.username }}.keys
+        exclusive: yes
+      with_items: "{{ users }}"
+    - name: Lock root password
+      user: name=root password='!'
+    - name: Disable SSH as root and/or with password authentication
+      replace:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#?(PermitRootLogin|PasswordAuthentication)\s+.*$'
+        replace: '\1 no'
+        validate: 'sshd -f %s -t'
+      notify: Restart SSHd
+    - name: Allow rate-limited OpenSSH traffic
+      ufw: rule=limit name=OpenSSH
+    - name: Enable UFW (ip/nftables front-end)
+      ufw: state=enabled

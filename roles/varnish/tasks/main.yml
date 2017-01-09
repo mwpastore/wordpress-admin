@@ -1,0 +1,18 @@
+---
+- apt: name={{ item }}
+  with_items:
+    - varnish
+
+- template: src=default.vcl.j2 dest=/etc/varnish/default.vcl
+  notify: reload varnish
+
+- file: dest=/etc/systemd/system/varnish.service.d state=directory
+
+- template: dest=/etc/systemd/system/varnish.service.d/override.conf src=varnish.service.j2
+  notify:
+    - reload systemd
+    - restart varnish
+
+- service: name=varnish state=started enabled=yes
+- service: name=varnishlog state=stopped enabled=no
+- service: name=varnishncsa state=stopped enabled=no

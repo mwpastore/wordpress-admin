@@ -1,0 +1,12 @@
+vcl 4.0;
+
+backend default {
+  .host = "localhost";
+  .port = "2020";
+}
+
+sub vcl_backend_response {
+  if (beresp.http.content-type ~ "text|javascript|json") {
+    set beresp.do_gzip = true;
+  }
+}

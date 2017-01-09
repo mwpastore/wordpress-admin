@@ -1,0 +1,19 @@
+[Unit]
+Description=WordPress container for {{ name }}
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker rm {{ name }}
+ExecStart=/usr/bin/docker run --name {{ name }} --rm \
+  --network wordpress --ip {{ ip }} \
+  -v /run/mysqld:/run/mysqld:ro \
+  -v {{ root }}/php.ini:/usr/local/etc/php/php.ini:ro \
+  -v {{ root }}/wordpress:/var/www/html \
+  wordpress:php{{ php }}-fpm-alpine -- php-fpm
+ExecReload=/usr/bin/docker restart {{ name }}
+ExecStop=/usr/bin/docker stop {{ name }}
+
+[Install]
+WantedBy=default.target

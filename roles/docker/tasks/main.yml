@@ -1,0 +1,41 @@
+---
+- apt_key: keyserver=hkp://ha.pool.sks-keyservers.net:80 id=58118E89F3A912897C070ADBF76221572C52609D
+  notify: update apt cache
+
+- apt_repository:
+    repo: deb https://apt.dockerproject.org/repo ubuntu-xenial main
+    filename: docker
+  notify: update apt cache
+
+- meta: flush_handlers
+
+- file: dest=/etc/systemd/system/docker.service.d state=directory
+
+- copy:
+    content: |
+      #!/bin/sh
+      echo "All runlevel operations denied by policy" >&2
+      exit 101
+    dest: /usr/sbin/policy-rc.d
+    mode: 0755
+  changed_when: no
+
+- apt: name={{ item }}
+  with_items:
+    - docker-engine
+    - dmsetup
+    - python-docker
+  register: packages
+
+- file: path=/usr/sbin/policy-rc.d state=absent
+  changed_when: no
+
+- command: dmsetup mknodes
+  when: packages.changed
+
+- template: dest=/etc/systemd/system/docker.service.d/override.conf src=docker.service.j2
+  notify:
+    - reload systemd
+    - restart docker
+
+- service: name=docker state=started enabled=yes

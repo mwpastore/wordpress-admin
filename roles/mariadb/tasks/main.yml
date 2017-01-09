@@ -1,0 +1,41 @@
+---
+- apt_key: keyserver=hkp://keyserver.ubuntu.com:80 id=0xF1656F24C74CD1D8
+  notify: update apt cache
+
+- apt_repository:
+    repo: deb [arch=amd64,i386,ppc64el] http://mirror.jaleco.com/mariadb/repo/10.1/ubuntu xenial main
+    filename: mariadb
+  notify: update apt cache
+
+- meta: flush_handlers
+
+- apt: name={{ item }}
+  with_items:
+    - mariadb-server
+    - python-mysqldb
+    - python-pexpect
+
+- stat: path=/var/lib/mysql/installation_secured
+  register: installation_secured
+
+- include: mysql_secure_installation.yml
+  when: installation_secured.stat.islnk is not defined
+
+- file: path=/var/lib/mysql/installation_secured state=touch
+  when: installation_secured.stat.islnk is not defined
+
+- template: dest=/root/.my.cnf src=my.cnf.j2 mode=0600
+
+- mysql_db:
+    name: "{{ db }}"
+
+- mysql_user:
+    name: "{{ db }}"
+    password: "{{ _mysql.passwords[db] }}"
+    priv: "{{ db }}.*:ALL"
+
+- service: name=mariadb state=started enabled=yes
+
+- file: path=/var/backups/mysql state=directory mode=0750 owner=root group=users
+
+- copy: src=backup_mysql.sh dest=/etc/cron.daily/backup-mysql mode=0700 owner=root group=root

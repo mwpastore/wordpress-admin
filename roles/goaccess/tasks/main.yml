@@ -1,0 +1,16 @@
+---
+- apt_key: url=https://deb.goaccess.io/gnugpg.key
+  notify: update apt cache
+
+- apt_repository:
+    repo: deb https://deb.goaccess.io/ {{ ansible_distribution_release }} main
+    filename: goaccess
+  notify: update apt cache
+
+- meta: flush_handlers
+
+- apt: name={{ item }}
+  with_items:
+    - geoip-database-contrib
+    - goaccess
+    - libgeoip1

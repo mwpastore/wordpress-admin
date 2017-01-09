@@ -1,0 +1,14 @@
+---
+dependencies:
+  - role: tersmitten.postfix
+    postfix_aliases:
+      - { user: root, alias: "{{ admin_email }}" }
+    postfix_inet_interfaces: loopback-only
+    postfix_relayhost: "{{ postfix.relayhost }}"
+    postfix_relaytls: "{{ postfix.relaytls }}"
+    postfix_sasl_password: "{{ _postfix.sasl_password }}"
+  - role: jnv.unattended-upgrades
+    unattended_mail: root
+    unattended_mail_only_on_error: yes
+    unattended_remove_unused_dependencies: yes
+    unattended_ignore_apps_require_restart: yes

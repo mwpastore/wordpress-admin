@@ -1,0 +1,51 @@
+---
+- docker_network:
+    name: wordpress
+    driver_options:
+      com.docker.network.bridge.name: docker1
+    ipam_options:
+      subnet: 172.18.0.0/16
+
+- file:
+    path: "{{ root }}/{{ item }}"
+    state: directory
+    mode: "0744"
+    owner: www-data
+    group: www-data
+    recurse: yes
+  with_items:
+    - wordpress
+    - logs
+
+- file:
+    path: /etc/caddy/vhosts
+    state: directory
+    mode: "0700"
+    owner: www-data
+    group: root
+
+- copy: src=php.ini dest={{ root }}/php.ini
+
+- template: src=Caddyfile.j2 dest={{ root }}/Caddyfile
+  notify: reload caddy
+
+- file:
+    src: "{{ root }}/Caddyfile"
+    dest: /etc/caddy/vhosts/{{ domain }}.conf
+    state: link
+
+- file: dest=/etc/systemd/system/caddy.service.d state=directory
+
+- copy: src=caddy.service dest=/etc/systemd/system/caddy.service.d/override.conf
+  notify:
+    - reload systemd
+    - restart caddy
+
+- template: dest=/etc/systemd/system/wordpress-{{ name }}.service src=wordpress.service.j2
+  notify:
+    - reload systemd
+    - restart {{ name }}
+
+- service: name=wordpress-{{ name }} state=started enabled=yes
+
+- ufw: rule=allow port=80,443 proto=tcp
