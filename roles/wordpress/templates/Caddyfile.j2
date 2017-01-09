@@ -1,10 +1,10 @@
 #jinja2: trim_blocks: False
-{{ domain }} {
-  tls {{ email }} {%- if ie8 %} {
+{{ caddy_domain }} {
+  tls {{ caddy_email }} {%- if caddy_ie8 %} {
     protocols tls1.0 tls1.2
   } {%- endif %}
 
-  log / {{ root }}/logs/access.log "{combined}" {
+  log / {{ caddy_root }}/logs/access.log "{combined}" {
     rotate {
       size 100 # rotate after 100 MB
       age  14  # keep log files for 14 days
@@ -12,10 +12,10 @@
     }
   }
 
-  {% if allow -%}
-  ipfilter /wp-admin {%- if not users %} /wp-login.php {%- endif %} {
+  {% if caddy_allow -%}
+  ipfilter /wp-admin {%- if not caddy_users %} /wp-login.php {%- endif %} {
     rule allow
-    ip {{ allow }}
+    ip {{ caddy_allow }}
     strict
   }
 
@@ -31,7 +31,7 @@
   }
 }
 
-{{ domain }}:2020 {
+{{ caddy_domain }}:2020 {
   bind localhost
 
   tls off
@@ -41,7 +41,7 @@
     # Other headers such as X-Forwarded-Proto will be passed-thru as-is.
     header_upstream Host {host}
 
-    {% if not xmlrpc -%}
+    {% if not caddy_xmlrpc -%}
     # XML-RPC is disabled, so delete the header that points to it.
     header_downstream -X-Pingback
     {%- endif %}
@@ -50,27 +50,29 @@
     header_downstream -Content-Length
   }
 
+  {% if caddy_search -%}
   filter rule {
     content_type (?:text|javascript)
-    search_pattern http://{{ search }}
-    replacement https://{{ domain }}
+    search_pattern http://{{ caddy_search }}
+    replacement https://{{ caddy_domain }}
   }
+  {%- endif %}
 }
 
-{{ domain }}:2021 {
+{{ caddy_domain }}:2021 {
   bind localhost
 
   tls off
 
   errors {
-    log {{ root }}/logs/error.log {
+    log {{ caddy_root }}/logs/error.log {
       size 100 # rotate after 100 MB
       age  14  # keep log files for 14 days
       keep 10  # keep at most 10 log files
     }
   }
 
-  root {{ root }}/wordpress
+  root {{ caddy_root }}/wordpress
 
   internal /.sucuriquarantine
 
@@ -79,7 +81,7 @@
   internal /wp-content/uploads/sucuri
 
   internal /wp-config.php
-  {% if not xmlrpc -%}
+  {% if not caddy_xmlrpc -%}
   internal /xmlrpc.php
   {%- endif %}
 
@@ -109,7 +111,7 @@
     to /index.php
   }
 
-  fastcgi / {{ ip }}:9000 php {
+  fastcgi / {{ php_ip }}:9000 php {
     root /var/www/html
   }
 }

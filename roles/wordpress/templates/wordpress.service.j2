@@ -7,11 +7,11 @@ After=docker.service
 Restart=always
 ExecStartPre=-/usr/bin/docker rm {{ name }}
 ExecStart=/usr/bin/docker run --name {{ name }} --rm \
-  --network wordpress --ip {{ ip }} \
+  --network wordpress --ip {{ php_ip }} \
   -v /run/mysqld:/run/mysqld:ro \
-  -v {{ root }}/php.ini:/usr/local/etc/php/php.ini:ro \
-  -v {{ root }}/wordpress:/var/www/html \
-  wordpress:php{{ php }}-fpm-alpine -- php-fpm
+  -v {{ caddy_root }}/php.ini:/usr/local/etc/php/php.ini:ro \
+  -v {{ caddy_root }}/wordpress:/var/www/html \
+  wordpress:php{{ php_version }}-fpm-alpine -- php-fpm
 ExecReload=/usr/bin/docker restart {{ name }}
 ExecStop=/usr/bin/docker stop {{ name }}
 

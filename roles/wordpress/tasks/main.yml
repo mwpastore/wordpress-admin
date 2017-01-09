@@ -7,7 +7,7 @@
       subnet: 172.18.0.0/16
 
 - file:
-    path: "{{ root }}/{{ item }}"
+    path: "{{ caddy_root }}/{{ item }}"
     state: directory
     mode: "0744"
     owner: www-data
@@ -24,14 +24,14 @@
     owner: www-data
     group: root
 
-- copy: src=php.ini dest={{ root }}/php.ini
+- copy: src=php.ini dest={{ caddy_root }}/php.ini
 
-- template: src=Caddyfile.j2 dest={{ root }}/Caddyfile
+- template: src=Caddyfile.j2 dest={{ caddy_root }}/Caddyfile
   notify: reload caddy
 
 - file:
-    src: "{{ root }}/Caddyfile"
-    dest: /etc/caddy/vhosts/{{ domain }}.conf
+    src: "{{ caddy_root }}/Caddyfile"
+    dest: /etc/caddy/vhosts/{{ caddy_domain }}.conf
     state: link
 
 - file: dest=/etc/systemd/system/caddy.service.d state=directory

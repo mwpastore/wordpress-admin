@@ -1,0 +1,9 @@
+---
+db_name: "{{ name }}"
+php_version: 7.0
+caddy_root: /var/www/{{ name }}
+caddy_email: "{{ admin_email }}"
+caddy_xmlrpc: no
+caddy_users: no
+caddy_ie8: no
+postfix_relaytls: yes

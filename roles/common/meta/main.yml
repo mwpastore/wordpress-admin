@@ -4,8 +4,6 @@ dependencies:
     postfix_aliases:
       - { user: root, alias: "{{ admin_email }}" }
     postfix_inet_interfaces: loopback-only
-    postfix_relayhost: "{{ postfix.relayhost }}"
-    postfix_relaytls: "{{ postfix.relaytls }}"
     postfix_sasl_password: "{{ _postfix.sasl_password }}"
   - role: jnv.unattended-upgrades
     unattended_mail: root

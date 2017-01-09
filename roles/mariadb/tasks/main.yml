@@ -27,12 +27,12 @@
 - template: dest=/root/.my.cnf src=my.cnf.j2 mode=0600
 
 - mysql_db:
-    name: "{{ db }}"
+    name: "{{ db_name }}"
 
 - mysql_user:
-    name: "{{ db }}"
-    password: "{{ _mysql.passwords[db] }}"
-    priv: "{{ db }}.*:ALL"
+    name: "{{ db_name }}"
+    password: "{{ _mysql.passwords[db_name] }}"
+    priv: "{{ db_name }}.*:ALL"
 
 - service: name=mariadb state=started enabled=yes
 
