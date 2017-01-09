@@ -7,4 +7,3 @@ dependencies:
     caddy_search: '(?:www\.)?pow(?:product)?photograph(?:y|er)\.com'
     caddy_allow: 2603:300a:30a:af00::/56
     caddy_ie8: yes
-    postfix_relayhost: smtp.mailgun.org
