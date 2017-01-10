@@ -71,5 +71,5 @@
       notify: Restart SSHd
     - name: Allow rate-limited OpenSSH traffic
       ufw: rule=limit name=OpenSSH
-    - name: Enable UFW (ip/nftables front-end)
-      ufw: state=enabled
+    - name: Enable UFW (ip/nftables front-end) (w/o logging)
+      ufw: state=enabled logging=off
