@@ -1,8 +1,15 @@
 #jinja2: trim_blocks: False
-{{ caddy_domain }} {%- for item in caddy_domain_aliases %} {{ item }} {%- endfor %} {
+{{ caddy_domain }}{% for item in caddy_domain_aliases %}, {{ item }}{% endfor %} {
   tls {{ caddy_email }} {%- if caddy_ie8 %} {
     protocols tls1.0 tls1.2
   } {%- endif %}
+
+  {% if caddy_domain_aliases|length > 0 -%}
+  redir 301 {
+    if {host} not {{ caddy_domain }}
+    /  https://{{ caddy_domain }}{uri}
+  }
+  {%- endif %}
 
   log / {{ caddy_root }}/logs/access.log "{combined}" {
     rotate {
