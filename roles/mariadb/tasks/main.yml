@@ -28,6 +28,10 @@
 
 - service: name=mariadb state=started enabled=yes
 
+- copy: content= dest=/etc/mysql/backup.txt force=no
+
+- copy: content= dest=/etc/mysql/snapshot.txt force=no
+
 - file: path=/var/backups/mysql state=directory mode=0750 owner=root group=users
 
 - copy: src=backup_mysql.sh dest=/etc/cron.daily/backup-mysql mode=0700 owner=root group=root

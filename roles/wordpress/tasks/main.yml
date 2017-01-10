@@ -7,6 +7,8 @@
     password: "{{ _mysql.passwords[db_name] }}"
     priv: "{{ db_name }}.*:ALL"
 
+- lineinfile: dest=/etc/mysql/backup.txt line={{ db_name }}
+
 - file:
     path: "{{ caddy_root }}/{{ item }}"
     state: directory

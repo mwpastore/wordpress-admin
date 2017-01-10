@@ -1,12 +1,10 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -euo pipefail
 
 # Create backups with permissions 0600
 umask 077
 
-declare -A DUMPFILES=(
-  [legacy]=
-  [newdev]=
-)
 BACKUP_DIR=/var/backups/mysql
 RETAIN_DAYS=14
 MAX_DELTA=5 # percent
@@ -21,6 +19,15 @@ if [[ ! -d $BACKUP_DIR || ! -w $BACKUP_DIR ]] ; then
   echo "ERROR: $BACKUP_DIR: Directory not found or not writable" >&2
   exit 1
 fi
+
+declare -A DUMPFILES
+while read database ; do
+  if [[ -z $database ]] ; then
+    continue
+  fi
+
+  DUMPFILES[$database]=
+done < /etc/mysql/backup.txt
 
 function mysql {
   command mysql --no-auto-rehash \
@@ -89,12 +96,17 @@ mysql --execute="KILL ${sleep_id};"
 wait $waitpid || true
 
 echo "* Creating portable snapshot(s)"
-#snapshot legacy
-#snapshot newdev
+while read database ; do
+  if [[ -z $database ]] ; then
+    continue
+  fi
+
+  snapshot $database
+done < /etc/mysql/snapshot.txt
 
 for database in ${!DUMPFILES[*]} ; do
+  size=$(stat -c "%s" ${DUMPFILES[$database]})
   if [[ -f $BACKUP_DIR/${database}.last_size ]] ; then
-    size=$(stat -c "%s" ${DUMPFILES[$database]})
     last_size=$(cat $BACKUP_DIR/${database}.last_size)
     diff=$((size - last_size))
     if (( $(bc <<< "scale=5; (${diff#-} / $last_size * 100) > $MAX_DELTA") )) ; then
