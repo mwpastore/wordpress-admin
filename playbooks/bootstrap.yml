@@ -27,8 +27,6 @@
       changed_when: "'stdout' in apt and 'packages will be installed' in apt.stdout"
 
 - hosts: all
-  vars_files:
-    - ../users.yml
   vars:
     ansible_ssh_user: root
   become: "{{ 'no' if ansible_ssh_user == 'root' else 'yes' }}"
@@ -38,6 +36,8 @@
         name: ssh
         state: restarted
   tasks:
+    - name: Import users lookup
+      include_vars: file=../users.yml name=users
     - name: Ensure passwordless sudo for members of the sudo group
       lineinfile:
         dest: /etc/sudoers
@@ -47,19 +47,19 @@
         validate: 'visudo -cf %s'
     - name: Create or update users
       user:
-        name: "{{ item.username }}"
-        comment: "{{ item.fullname }}"
-        uid: "{{ item.uid }}"
+        name: "{{ item.key }}"
+        comment: "{{ item.value.fullname }}"
+        uid: "{{ item.value.uid }}"
         shell: /bin/bash
         group: users
-        groups: sudo{{ ',' + item.groups if 'groups' in item else '' }}
-      with_items: "{{ users }}"
+        groups: sudo{{ ',' + item.value.groups if 'groups' in item.value else '' }}
+      with_dict: "{{ users }}"
     - name: Create or update users' authorized_keys from GitHub
       authorized_key:
-        user: "{{ item.username }}"
-        key: https://github.com/{{ item.github.username }}.keys
+        user: "{{ item.key }}"
+        key: https://github.com/{{ item.value.github.username }}.keys
         exclusive: yes
-      with_items: "{{ users }}"
+      with_dict: "{{ users }}"
     - name: Lock root password
       user: name=root password='!'
     - name: Disable SSH as root and/or with password authentication
