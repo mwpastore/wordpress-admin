@@ -3,6 +3,7 @@ db_name: "{{ name }}"
 php_htdocs: ~
 php_version: 7.0
 caddy_root: /var/www/{{ name }}
+caddy_domain_aliases: []
 caddy_email: "{{ admin_email }}"
 caddy_allow: ~
 caddy_search: ~
