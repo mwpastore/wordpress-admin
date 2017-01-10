@@ -64,7 +64,7 @@
   {% if caddy_search -%}
   filter rule {
     content_type (?:text|javascript)
-    search_pattern http://{{ caddy_search }}
+    search_pattern https?://{{ caddy_search }}
     replacement https://{{ caddy_domain }}
   }
   {%- endif %}
