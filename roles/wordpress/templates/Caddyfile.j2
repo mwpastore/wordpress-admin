@@ -26,6 +26,10 @@
 
   ratelimit /wp-login.php 5 7 minute
 
+  {% if caddy_basicauth -%}
+  basicauth {{ caddy_basicauth }}
+  {%- endif %}
+
   proxy / localhost:6081 {
     transparent
   }
@@ -112,6 +116,6 @@
   }
 
   fastcgi / {{ php_ip }}:9000 php {
-    root /var/www/html
+    root /var/www/html{{ php_htdocs }}
   }
 }
