@@ -68,6 +68,14 @@
     replacement https://{{ caddy_domain }}
   }
   {%- endif %}
+
+  {% if wp_content -%}
+  filter rule {
+    content_type (?:text|javascript)
+    search_pattern /wp-content
+    replacement {{ wp_content }}
+  }
+  {%- endif %}
 }
 
 {{ caddy_domain }}:2021 {
@@ -114,6 +122,13 @@
     ext !.gif !.jpeg !.jpg !.png !.css !.js
     to /index.php
   }
+
+  {% if wp_content -%}
+  rewrite /wp-content {
+    regexp (.*)
+    to {{ wp_content }}{1}
+  }
+  {%- endif %}
 
   rewrite /wp-includes {
     ext .php
