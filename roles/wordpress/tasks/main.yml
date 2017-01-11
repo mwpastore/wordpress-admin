@@ -10,20 +10,13 @@
 - file:
     path: "{{ caddy_root }}/{{ item }}"
     state: directory
-    mode: "0744"
+    mode: "a+rX"
     owner: www-data
     group: www-data
     recurse: yes
   with_items:
     - wordpress
     - logs
-
-- file:
-    path: /etc/caddy/vhosts
-    state: directory
-    mode: "0700"
-    owner: www-data
-    group: root
 
 - copy: src=php.ini dest={{ caddy_root }}/php.ini
 
@@ -35,18 +28,9 @@
     dest: /etc/caddy/vhosts/{{ caddy_domain }}.conf
     state: link
 
-- file: dest=/etc/systemd/system/caddy.service.d state=directory
-
-- copy: src=caddy.service dest=/etc/systemd/system/caddy.service.d/override.conf
-  notify:
-    - reload systemd
-    - restart caddy
-
 - template: dest=/etc/systemd/system/wordpress-{{ name }}.service src=wordpress.service.j2
   notify:
     - reload systemd
     - restart {{ name }}
 
 - service: name=wordpress-{{ name }} state=started enabled=yes
-
-- ufw: rule=allow port=80,443 proto=tcp

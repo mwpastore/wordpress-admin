@@ -1,17 +1,7 @@
 ---
 dependencies:
+  - common
+  - caddy
   - docker
-  - goaccess
   - mariadb
   - varnish
-  - www-data
-  - role: antoiner77.caddy
-    caddy_features: ipfilter,filter,ratelimit
-    caddy_config: |
-      import vhosts/*.conf
-
-      localhost:8080 {
-        tls off
-        root /var/www/phpMyAdmin
-        fastcgi / localhost:9000 php
-      }

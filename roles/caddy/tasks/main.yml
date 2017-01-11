@@ -1,0 +1,16 @@
+---
+- file:
+    path: /etc/caddy/vhosts
+    state: directory
+    mode: "0700"
+    owner: www-data
+    group: root
+
+- file: dest=/etc/systemd/system/caddy.service.d state=directory
+
+- copy: src=caddy.service dest=/etc/systemd/system/caddy.service.d/override.conf
+  notify:
+    - reload systemd
+    - restart caddy
+
+- ufw: rule=allow port=80,443 proto=tcp
