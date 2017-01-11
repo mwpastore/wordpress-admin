@@ -13,9 +13,8 @@
 
   log / {{ caddy_root }}/logs/access.log "{combined}" {
     rotate {
-      size 100 # rotate after 100 MB
-      age  14  # keep log files for 14 days
-      keep 10  # keep at most 10 log files
+      size 100
+      age 180
     }
   }
 
@@ -85,13 +84,20 @@
 
   errors {
     log {{ caddy_root }}/logs/error.log {
-      size 100 # rotate after 100 MB
-      age  14  # keep log files for 14 days
-      keep 10  # keep at most 10 log files
+      size 20
+      age 180
     }
   }
 
   root {{ caddy_root }}/wordpress{{ php_htdocs }}
+
+  {% if caddy_git -%}
+  git {
+  {% for item in caddy_git %}
+    {{ item }} {{ caddy_git[item] }}
+  {% endfor %}
+  }
+  {%- endif %}
 
   internal /.sucuriquarantine
 
@@ -115,6 +121,7 @@
 
   rewrite /wp-content {
     ext .php
+    if {path} not /wp-content/plugins/wp-ui/css/css.php
     to /index.php
   }
 
@@ -132,8 +139,8 @@
 
   rewrite /wp-includes {
     ext .php
-    if {file} not wp-tinymce.php
-    if {file} not ms-files.php
+    if {path} not /wp-includes/js/tinymce/wp-tinymce.php
+    if {file} not /wp-includes/ms-files.php
     to /index.php
   }
 

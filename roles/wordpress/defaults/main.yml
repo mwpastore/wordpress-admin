@@ -11,4 +11,5 @@ caddy_basicauth: ~
 caddy_xmlrpc: no
 caddy_users: no
 caddy_ie8: no
+caddy_git: ~
 wp_content: ~
