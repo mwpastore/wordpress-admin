@@ -104,9 +104,9 @@
   internal /xmlrpc.php
   {%- endif %}
 
-  header /downloads Cache-Control "public, max-age=2592000, s-max-age=86400"
-  header /wp-content Cache-Control "public, max-age=2592000, s-max-age=86400"
-  header /wp-includes Cache-Control "public, max-age=2592000, s-max-age=86400"
+  header /downloads Cache-Control "public, max-age=2592000, s-maxage=86400"
+  header /wp-content Cache-Control "public, max-age=2592000, s-maxage=86400"
+  header /wp-includes Cache-Control "public, max-age=2592000, s-maxage=86400"
 
   rewrite {
     if {path} not_match ^/wp-admin
