@@ -25,6 +25,7 @@
     - docker-engine
     - dmsetup
     - python-docker
+    - systemd-docker
   register: packages
 
 - file: path=/usr/sbin/policy-rc.d state=absent

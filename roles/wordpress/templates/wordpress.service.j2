@@ -4,16 +4,22 @@ Requires=docker.service
 After=docker.service
 
 [Service]
+Type=notify
+NotifyAccess=all
 Restart=always
-ExecStartPre=-/usr/bin/docker rm {{ name }}
-ExecStart=/usr/bin/docker run --name {{ name }} --rm \
+RestartSec=10
+TimeoutStartSec=120
+TimeoutStopSec=15
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull wordpress:{{ docker_image }}
+ExecStart=/usr/bin/systemd-docker run --name %n --rm \
   --network wordpress --ip {{ php_ip }} \
   -v /run/mysqld:/run/mysqld:ro \
   -v {{ caddy_root }}/php.ini:/usr/local/etc/php/php.ini:ro \
   -v {{ caddy_root }}/wordpress:/var/www/html \
-  wordpress:php{{ php_version }}-fpm-alpine -- php-fpm
-ExecReload=/usr/bin/docker restart {{ name }}
-ExecStop=/usr/bin/docker stop {{ name }}
+  wordpress:{{ docker_image }} -- php-fpm
+ExecReload=/usr/bin/docker restart %n
+ExecStop=/usr/bin/docker stop %n
 
 [Install]
 WantedBy=default.target
