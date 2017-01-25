@@ -1,0 +1,10 @@
+---
+docker_image: 7.0-fpm-alpine
+php_htdocs: ~
+caddy_root: /var/www/{{ name }}
+caddy_domain_aliases: []
+caddy_email: "{{ admin_email }}"
+caddy_search: ~
+caddy_basicauth: ~
+caddy_ie8: no
+caddy_git: ~

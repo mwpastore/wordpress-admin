@@ -1,0 +1,34 @@
+---
+- file:
+    path: "{{ caddy_root }}/{{ item }}"
+    state: directory
+    mode: "a+rX"
+    owner: www-data
+    group: www-data
+    recurse: yes
+  with_items:
+    - html
+    - logs
+
+- copy: src=php.ini dest={{ caddy_root }}/php.ini
+  notify: restart {{ name }}
+
+- template:
+    src: Caddyfile.j2
+    dest: "{{ caddy_root }}/Caddyfile"
+    validate: /usr/local/bin/caddy-from-source -conf %s -validate
+  notify: reload caddy
+
+- file:
+    src: "{{ caddy_root }}/Caddyfile"
+    dest: /etc/caddy/vhosts/{{ caddy_domain }}.conf
+    state: link
+
+- file: dest=/etc/systemd/system/caddy.service.d state=directory
+
+- template: dest=/etc/systemd/system/php-{{ name }}.service src=php.service.j2
+  notify:
+    - reload systemd
+    - restart {{ name }}
+
+- service: name=php-{{ name }} state=started enabled=yes

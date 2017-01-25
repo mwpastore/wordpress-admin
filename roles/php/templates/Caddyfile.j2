@@ -1,0 +1,67 @@
+#jinja2: trim_blocks: False
+{{ caddy_domain }}{% for item in caddy_domain_aliases %}, {{ item }}{% endfor %} {
+  tls {{ caddy_email }} {%- if caddy_ie8 %} {
+    protocols tls1.0 tls1.2
+  } {%- endif %}
+
+  log / {{ caddy_root }}/logs/access.log "{combined}" {
+    rotate {
+      size 100
+      age 180
+    }
+  }
+
+  {% if caddy_basicauth -%}
+  basicauth {{ caddy_basicauth }}
+  {%- endif %}
+
+  proxy / localhost:6081 {
+    transparent
+  }
+}
+
+{{ caddy_domain }}:2020{% for item in caddy_domain_aliases %}, {{ item }}:2020{% endfor %} {
+  bind localhost
+
+  tls off
+
+  errors {
+    log {{ caddy_root }}/logs/error.log {
+      size 20
+      age 180
+    }
+  }
+
+  root {{ caddy_root }}/html{{ php_htdocs }}
+
+  {% if caddy_git -%}
+  git {
+  {% for item in caddy_git %}
+    {{ item }} {{ caddy_git[item] }}
+  {% endfor %}
+  }
+  {%- endif %}
+
+  internal /config.php
+
+  header /assets Cache-Control "public, max-age=2592000, s-maxage=86400"
+
+  rewrite {
+    to {path} {path}/ /index.php?_url={uri}
+  }
+
+  fastcgi / {{ php_ip }}:9000 php {
+    root /var/www/html{{ php_htdocs }}
+  }
+
+  {% if caddy_search -%}
+  filter rule {
+    content_type (?:text|javascript)
+    search_pattern https?://{{ caddy_search }}
+    replacement https://{{ caddy_domain }}
+  }
+  {%- endif %}
+
+  # Let Varnish re-count the bytes because `filter' does the wrong thing. :c
+  header / -Content-Length
+}
