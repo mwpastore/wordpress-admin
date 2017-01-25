@@ -37,7 +37,7 @@
 
 - lineinfile:
     dest: /etc/hosts
-    regexp: '^127.0.1.1'
+    regexp: "^127.0.1.1"
     state: absent
 
 - lineinfile:
@@ -48,3 +48,7 @@
   with_items: "{{ groups['all'] }}"
 
 - copy: src=zz-reboot-required dest=/etc/cron.daily mode=0755 owner=root group=root
+
+# TODO: Not sure where to put these?
+- ufw: rule=limit direction=in if=docker1 name=Postfix
+- ufw: rule=allow direction=in if=docker1 port=3306

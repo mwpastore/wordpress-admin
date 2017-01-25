@@ -1,6 +1,6 @@
 [Service]
 ExecStart=
-ExecStart=/usr/local/bin/caddy-from-source -log stdout -agree=true -conf=/etc/caddy/Caddyfile -root=/var/tmp
+ExecStart=/usr/local/bin/caddy-from-source -log stdout -agree=true -conf=/etc/caddy/Caddyfile -root=/var/tmp -email={{ admin_email }}
 
 ; Setting this to true breaks caddy-git...
 ProtectHome=false

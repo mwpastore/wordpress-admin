@@ -6,6 +6,7 @@
     name: "{{ db_name }}"
     password: "{{ _mysql.passwords[db_name] }}"
     priv: "{{ db_name }}.*:ALL"
+    host: "{{ php_ip }}"
 
 - lineinfile: dest=/etc/mysql/backup.txt line={{ db_name }}
 
@@ -21,8 +22,12 @@
     - logs
 
 - copy: src=php.ini dest={{ caddy_root }}/php.ini
+  notify: restart {{ name }}
 
-- template: src=Caddyfile.j2 dest={{ caddy_root }}/Caddyfile
+- template:
+    src: Caddyfile.j2
+    dest: "{{ caddy_root }}/Caddyfile"
+    validate: /usr/local/bin/caddy-from-source -conf %s -validate
   notify: reload caddy
 
 - file:

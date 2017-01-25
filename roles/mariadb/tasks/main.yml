@@ -26,6 +26,9 @@
 
 - template: dest=/root/.my.cnf src=my.cnf.j2 mode=0600
 
+- template: dest=/etc/mysql/conf.d/wordpress.cnf src=wordpress.cnf.j2
+  notify: restart mariadb
+
 - service: name=mariadb state=started enabled=yes
 
 - copy: content= dest=/etc/mysql/backup.txt force=no

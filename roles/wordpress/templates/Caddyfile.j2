@@ -7,7 +7,7 @@
   {% if caddy_domain_aliases|length > 0 -%}
   redir 301 {
     if {host} not {{ caddy_domain }}
-    /  https://{{ caddy_domain }}{uri}
+    / https://{{ caddy_domain }}{uri}
   }
   {%- endif %}
 
@@ -42,42 +42,6 @@
 }
 
 {{ caddy_domain }}:2020 {
-  bind localhost
-
-  tls off
-
-  proxy / localhost:2021 {
-    # The Host header gets unset coming into this vhost, so re-set it here.
-    # Other headers such as X-Forwarded-Proto will be passed-thru as-is.
-    header_upstream Host {host}
-
-    {% if not caddy_xmlrpc -%}
-    # XML-RPC is disabled, so delete the header that points to it.
-    header_downstream -X-Pingback
-    {%- endif %}
-
-    # Let Varnish re-count the bytes because `filter' does the wrong thing. :c
-    header_downstream -Content-Length
-  }
-
-  {% if caddy_search -%}
-  filter rule {
-    content_type (?:text|javascript)
-    search_pattern https?://{{ caddy_search }}
-    replacement https://{{ caddy_domain }}
-  }
-  {%- endif %}
-
-  {% if wp_content -%}
-  filter rule {
-    content_type (?:text|javascript)
-    search_pattern /wp-content
-    replacement {{ wp_content }}
-  }
-  {%- endif %}
-}
-
-{{ caddy_domain }}:2021 {
   bind localhost
 
   tls off
@@ -147,4 +111,28 @@
   fastcgi / {{ php_ip }}:9000 php {
     root /var/www/html{{ php_htdocs }}
   }
+
+  {% if caddy_search -%}
+  filter rule {
+    content_type (?:text|javascript)
+    search_pattern https?://{{ caddy_search }}
+    replacement https://{{ caddy_domain }}
+  }
+  {%- endif %}
+
+  {% if wp_content -%}
+  filter rule {
+    content_type (?:text|javascript)
+    search_pattern /wp-content
+    replacement {{ wp_content }}
+  }
+  {%- endif %}
+
+  {% if not caddy_xmlrpc -%}
+  # XML-RPC is disabled, so delete the header that points to it.
+  header / -X-Pingback
+  {%- endif %}
+
+  # Let Varnish re-count the bytes because `filter' does the wrong thing. :c
+  header / -Content-Length
 }
