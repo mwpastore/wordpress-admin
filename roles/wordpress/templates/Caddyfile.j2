@@ -132,7 +132,4 @@
   # XML-RPC is disabled, so delete the header that points to it.
   header / -X-Pingback
   {%- endif %}
-
-  # Let Varnish re-count the bytes because `filter' does the wrong thing. :c
-  header / -Content-Length
 }

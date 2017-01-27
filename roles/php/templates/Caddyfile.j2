@@ -61,7 +61,4 @@
     replacement https://{{ caddy_domain }}
   }
   {%- endif %}
-
-  # Let Varnish re-count the bytes because `filter' does the wrong thing. :c
-  header / -Content-Length
 }
