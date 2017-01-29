@@ -49,6 +49,8 @@
 
 - copy: src=zz-reboot-required dest=/etc/cron.daily mode=0755 owner=root group=root
 
+- sysctl: name=vm.swappiness value=1
+
 # TODO: Not sure where to put these?
 - ufw: rule=limit direction=in if=docker1 name=Postfix
 - ufw: rule=allow direction=in if=docker1 port=3306

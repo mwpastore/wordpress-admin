@@ -9,4 +9,8 @@ sub vcl_backend_response {
   if (beresp.http.content-type ~ "text|javascript|json") {
     set beresp.do_gzip = true;
   }
+
+  if (bereq.url !~ "\.php") {
+    set beresp.storage_hint = "static";
+  }
 }
