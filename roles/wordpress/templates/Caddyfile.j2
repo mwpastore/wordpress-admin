@@ -36,33 +36,6 @@
   basicauth {{ caddy_basicauth }}
   {%- endif %}
 
-  proxy / localhost:6081 {
-    transparent
-  }
-}
-
-{{ caddy_domain }}:2020 {
-  bind localhost
-
-  tls off
-
-  errors {
-    log {{ caddy_root }}/logs/error.log {
-      size 20
-      age 180
-    }
-  }
-
-  root {{ caddy_root }}/wordpress{{ php_htdocs }}
-
-  {% if caddy_git -%}
-  git {
-  {% for item in caddy_git %}
-    {{ item }} {{ caddy_git[item] }}
-  {% endfor %}
-  }
-  {%- endif %}
-
   internal /.sucuriquarantine
 
   internal /wp-content/updraft
@@ -73,10 +46,6 @@
   {% if not caddy_xmlrpc -%}
   internal /xmlrpc.php
   {%- endif %}
-
-  header /downloads Cache-Control "public, max-age=2592000, s-maxage=86400"
-  header /wp-content Cache-Control "public, max-age=2592000, s-maxage=86400"
-  header /wp-includes Cache-Control "public, max-age=2592000, s-maxage=86400"
 
   rewrite {
     if {path} not_match ^/wp-admin
@@ -107,6 +76,37 @@
     if {file} not /wp-includes/ms-files.php
     to /index.php
   }
+
+  proxy / localhost:6081 {
+    transparent
+  }
+}
+
+{{ caddy_domain }}:2020 {
+  bind localhost
+
+  tls off
+
+  errors {
+    log {{ caddy_root }}/logs/error.log {
+      size 20
+      age 180
+    }
+  }
+
+  root {{ caddy_root }}/wordpress{{ php_htdocs }}
+
+  {% if caddy_git -%}
+  git {
+  {% for item in caddy_git %}
+    {{ item }} {{ caddy_git[item] }}
+  {% endfor %}
+  }
+  {%- endif %}
+
+  header /downloads Cache-Control "public, max-age=2592000, s-maxage=86400"
+  header /wp-content Cache-Control "public, max-age=2592000, s-maxage=86400"
+  header /wp-includes Cache-Control "public, max-age=2592000, s-maxage=86400"
 
   fastcgi / {{ php_ip }}:9000 php {
     root /var/www/html{{ php_htdocs }}

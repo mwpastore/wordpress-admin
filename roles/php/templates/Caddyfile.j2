@@ -15,6 +15,12 @@
   basicauth {{ caddy_basicauth }}
   {%- endif %}
 
+  internal /config.php
+
+  rewrite {
+    to {path} {path}/ /index.php?_url={uri}
+  }
+
   proxy / localhost:6081 {
     transparent
   }
@@ -42,13 +48,7 @@
   }
   {%- endif %}
 
-  internal /config.php
-
   header /assets Cache-Control "public, max-age=2592000, s-maxage=86400"
-
-  rewrite {
-    to {path} {path}/ /index.php?_url={uri}
-  }
 
   fastcgi / {{ php_ip }}:9000 php {
     root /var/www/html{{ php_htdocs }}
