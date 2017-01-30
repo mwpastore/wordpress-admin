@@ -17,10 +17,6 @@
 
   internal /config.php
 
-  rewrite {
-    to {path} {path}/ /index.php?_url={uri}
-  }
-
   proxy / localhost:6081 {
     transparent
   }
@@ -43,16 +39,20 @@
   {% if caddy_git -%}
   git {
   {% for item in caddy_git %}
-    {{ item }} {{ caddy_git[item] }}
+    {{ item }}{% if caddy_git[item] is defined %} {{ caddy_git[item] }}{% endif %}
   {% endfor %}
   }
   {%- endif %}
 
-  header /assets Cache-Control "public, max-age=2592000, s-maxage=86400"
+  rewrite {
+    to {path} {path}/ /index.php?_url={uri}
+  }
 
   fastcgi / {{ php_ip }}:9000 php {
     root /var/www/html{{ php_htdocs }}
   }
+
+  header /assets Cache-Control "max-age=2592000, s-maxage=86400"
 
   {% if caddy_search -%}
   filter rule {

@@ -1,15 +1,20 @@
 #jinja2: trim_blocks: False
-{{ caddy_domain }}{% for item in caddy_domain_aliases %}, {{ item }}{% endfor %} {
+{% for item in caddy_domain_aliases %}{{ item }}:80{% if not loop.last %}, {% endif %}{% endfor %} {
+  redir https://{{ caddy_domain }}
+}
+
+{% for item in caddy_domain_aliases %}{{ item }}:443{% if not loop.last %}, {% endif %}{% endfor %} {
   tls {{ caddy_email }} {%- if caddy_ie8 %} {
     protocols tls1.0 tls1.2
   } {%- endif %}
 
-  {% if caddy_domain_aliases|length > 0 -%}
-  redir 301 {
-    if {host} not {{ caddy_domain }}
-    / https://{{ caddy_domain }}{uri}
-  }
-  {%- endif %}
+  redir https://{{ caddy_domain }}
+}
+
+{{ caddy_domain }} {
+  tls {{ caddy_email }} {%- if caddy_ie8 %} {
+    protocols tls1.0 tls1.2
+  } {%- endif %}
 
   log / {{ caddy_root }}/logs/access.log "{combined}" {
     rotate {
@@ -26,7 +31,7 @@
   }
 
   ipfilter /wp-admin/admin-ajax.php {
-    rule block
+    rule block # disallow nobody, i.e. allow everybody
   }
   {%- endif %}
 
@@ -46,11 +51,6 @@
   {% if not caddy_xmlrpc -%}
   internal /xmlrpc.php
   {%- endif %}
-
-  rewrite {
-    if {path} not_match ^/wp-admin
-    to {path} {path}/ /index.php?_url={uri}
-  }
 
   rewrite /wp-content {
     ext .php
@@ -73,7 +73,7 @@
   rewrite /wp-includes {
     ext .php
     if {path} not /wp-includes/js/tinymce/wp-tinymce.php
-    if {file} not /wp-includes/ms-files.php
+    if {path} not /wp-includes/ms-files.php
     to /index.php
   }
 
@@ -99,18 +99,28 @@
   {% if caddy_git -%}
   git {
   {% for item in caddy_git %}
-    {{ item }} {{ caddy_git[item] }}
+    {{ item }}{% if caddy_git[item] is defined %} {{ caddy_git[item] }}{% endif %}
   {% endfor %}
   }
   {%- endif %}
 
-  header /downloads Cache-Control "public, max-age=2592000, s-maxage=86400"
-  header /wp-content Cache-Control "public, max-age=2592000, s-maxage=86400"
-  header /wp-includes Cache-Control "public, max-age=2592000, s-maxage=86400"
+  rewrite {
+    if {path} not_match ^/wp-admin
+    to {path} {path}/ /index.php?_url={uri}
+  }
 
   fastcgi / {{ php_ip }}:9000 php {
     root /var/www/html{{ php_htdocs }}
   }
+
+  header /downloads Cache-Control "max-age=2592000, s-maxage=86400"
+  header /wp-content Cache-Control "max-age=2592000, s-maxage=86400"
+  header /wp-includes Cache-Control "max-age=2592000, s-maxage=86400"
+
+  {% if not caddy_xmlrpc -%}
+  # XML-RPC is disabled, so delete the header that points to it.
+  header / -X-Pingback
+  {%- endif %}
 
   {% if caddy_search -%}
   filter rule {
@@ -126,10 +136,5 @@
     search_pattern /wp-content
     replacement {{ wp_content }}
   }
-  {%- endif %}
-
-  {% if not caddy_xmlrpc -%}
-  # XML-RPC is disabled, so delete the header that points to it.
-  header / -X-Pingback
   {%- endif %}
 }

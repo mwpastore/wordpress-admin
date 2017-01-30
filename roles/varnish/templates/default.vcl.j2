@@ -10,7 +10,12 @@ sub vcl_backend_response {
     set beresp.do_gzip = true;
   }
 
-  if (bereq.url !~ "\.php") {
+  if (beresp.http.x-powered-by) {
+    set beresp.storage_hint = "dynamic";
+
+    unset beresp.http.x-powered-by;
+  }
+  else {
     set beresp.storage_hint = "static";
   }
 }

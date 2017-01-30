@@ -1,2 +1,3 @@
 ---
-varnish_size: 256
+varnish_dynamic_size: 256
+varnish_static_size: 2048
