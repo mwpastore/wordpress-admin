@@ -31,4 +31,6 @@
     - reload systemd
     - restart {{ name }}
 
+- meta: flush_handlers
+
 - service: name=php-{{ name }} state=started enabled=yes
