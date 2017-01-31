@@ -11,7 +11,6 @@ RestartSec=10
 TimeoutStartSec=120
 TimeoutStopSec=15
 ExecStartPre=-/usr/bin/docker rm %n
-ExecStartPre=/usr/bin/docker pull php:{{ docker_image }}
 ExecStart=/usr/bin/systemd-docker run --name %n --rm \
   --network wordpress --ip {{ php_ip }} \
   -v {{ caddy_root }}/php.ini:/usr/local/etc/php/php.ini:ro \
