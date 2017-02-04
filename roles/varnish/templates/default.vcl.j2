@@ -1,21 +1,24 @@
 vcl 4.0;
 
 backend default {
-  .host = "localhost";
-  .port = "2020";
+    .host = "localhost";
+    .port = "2020";
 }
 
 sub vcl_backend_response {
-  if (beresp.http.content-type ~ "text|javascript|json") {
-    set beresp.do_gzip = true;
-  }
+    if (
+        beresp.http.content-type ~ "text|javascript|json|svg\+xml|icon|font" &&
+        beresp.http.content-type !~ "woff"
+    ) {
+        set beresp.do_gzip = true;
+    }
 
-  if (beresp.http.x-powered-by) {
-    set beresp.storage_hint = "dynamic";
+    if (beresp.http.x-powered-by) {
+        set beresp.storage_hint = "dynamic";
 
-    unset beresp.http.x-powered-by;
-  }
-  else {
-    set beresp.storage_hint = "static";
-  }
+        unset beresp.http.x-powered-by;
+    }
+    else {
+        set beresp.storage_hint = "static";
+    }
 }
