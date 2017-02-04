@@ -32,7 +32,7 @@
 
 - file:
     src: "{{ caddy_root }}/Caddyfile"
-    dest: /etc/caddy/vhosts/{{ caddy_domain }}.conf
+    dest: /etc/caddy/vhosts/{{ name }}.conf
     state: link
 
 - template: dest=/etc/systemd/system/wordpress-{{ name }}.service src=wordpress.service.j2

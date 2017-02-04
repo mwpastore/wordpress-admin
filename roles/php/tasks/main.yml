@@ -21,7 +21,7 @@
 
 - file:
     src: "{{ caddy_root }}/Caddyfile"
-    dest: /etc/caddy/vhosts/{{ caddy_domain }}.conf
+    dest: /etc/caddy/vhosts/{{ name }}.conf
     state: link
 
 - file: dest=/etc/systemd/system/caddy.service.d state=directory
