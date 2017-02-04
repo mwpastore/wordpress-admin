@@ -4,7 +4,7 @@ dependencies:
   - www-data
   - goaccess
   - role: antoiner77.caddy
-    caddy_features: ipfilter,filter,ratelimit,git
+    caddy_features: ipfilter,filter,ratelimit,git,realip
     caddy_config: |
       import vhosts/*.conf
 
