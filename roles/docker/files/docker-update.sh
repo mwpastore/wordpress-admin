@@ -4,9 +4,10 @@ set -euo pipefail
 
 mkdir -p /run/docker-update
 psout=$(mktemp)
+psout2=$(mktemp)
 function cleanup {
   rmdir /run/docker-update 2>/dev/null
-  rm -f $psout
+  rm -f $psout $psout2
 }
 trap cleanup EXIT
 
@@ -16,7 +17,9 @@ images=$(awk '{ print $1 }' $psout | sort -u)
 echo "Found $(echo $(wc -w <<< $images)) image(s) and $(echo $(wc -l < $psout)) service(s)!"
 
 for image in $images ; do
-  if docker pull $image | grep -qs "Image is up to date" ; then
+  if ! docker pull $image >$psout2 2>&1 ; then
+    echo "Image $image was updated by another process."
+  elif grep -qs "Image is up to date" $psout2 ; then
     echo "Image $image is up to date."
   else
     echo "Image $image has been updated."
@@ -30,7 +33,7 @@ shopt -s nullglob
 notices=(/run/docker-update/*.updated)
 shopt -u nullglob
 
-for notice in ${notices[*]+"${notices[*]}"} ; do
+for notice in ${notices[@]+"${notices[@]}"} ; do
   name=$(basename $notice .updated)
 
   echo "Restarting ${name}..."

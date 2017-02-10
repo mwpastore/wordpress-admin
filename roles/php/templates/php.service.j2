@@ -2,6 +2,7 @@
 Description=PHP container for {{ name }}
 Requires=docker.service
 After=docker.service
+PartOf=docker.service
 
 [Service]
 Type=notify
