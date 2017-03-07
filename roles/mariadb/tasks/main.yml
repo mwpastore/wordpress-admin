@@ -1,13 +1,18 @@
 ---
-- apt_key: keyserver=hkp://keyserver.ubuntu.com:80 id=0xF1656F24C74CD1D8
-  notify: update apt cache
+- apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: '0xF1656F24C74CD1D8'
 
 - apt_repository:
     repo: deb [arch=amd64,i386,ppc64el] http://mirror.jaleco.com/mariadb/repo/10.1/ubuntu xenial main
     filename: mariadb
-  notify: update apt cache
+    state: absent
+    update_cache: yes
 
-- meta: flush_handlers
+- apt_repository:
+    repo: deb [arch=amd64,i386] http://mirror.jaleco.com/mariadb/repo/10.1/ubuntu {{ ansible_distribution_release }} main
+    filename: mariadb
+    update_cache: yes
 
 - apt: name={{ item }}
   with_items:

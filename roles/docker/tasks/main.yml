@@ -1,13 +1,22 @@
 ---
-- apt_key: keyserver=hkp://ha.pool.sks-keyservers.net:80 id=58118E89F3A912897C070ADBF76221572C52609D
-  notify: update apt cache
+- apt_key:
+    id: 58118E89F3A912897C070ADBF76221572C52609D
+    state: absent
 
 - apt_repository:
     repo: deb https://apt.dockerproject.org/repo ubuntu-xenial main
     filename: docker
-  notify: update apt cache
+    state: absent
+    update_cache: yes
 
-- meta: flush_handlers
+- apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+- apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    filename: docker
+    update_cache: yes
 
 - file: dest=/etc/systemd/system/docker.service.d state=directory
 
@@ -22,7 +31,7 @@
 
 - apt: name={{ item }}
   with_items:
-    - docker-engine
+    - docker-ce
     - dmsetup
     - python-docker
     - systemd-docker
