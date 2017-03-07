@@ -2,7 +2,6 @@
 Description=WordPress container for {{ name }}
 Requires=docker.service
 After=docker.service
-PartOf=docker.service
 
 [Service]
 Type=notify
@@ -20,4 +19,4 @@ ExecStart=/usr/bin/systemd-docker run --name %n --rm \
 ExecStop=/usr/bin/docker stop %n
 
 [Install]
-WantedBy=default.target
+WantedBy=default.target docker.service
