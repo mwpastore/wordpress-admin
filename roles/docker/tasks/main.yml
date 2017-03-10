@@ -57,7 +57,7 @@
     ipam_options:
       subnet: 172.18.0.0/16
 
-- include_vars: file=../../../users.yml name=users
+- include_vars: file=../../../../users.yml name=users
 
 - user:
     name: "{{ item }}"
