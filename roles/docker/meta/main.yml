@@ -1,3 +1,8 @@
 ---
 dependencies:
   - common
+  - role: github-latest-release
+    github_owner: bcicen
+    github_repo: ctop
+    asset_path: /usr/local/bin/{{ github_repo }}
+    asset_mode: 0755

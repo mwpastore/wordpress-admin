@@ -7,3 +7,6 @@
 [submodule "roles/jnv.unattended-upgraded"]
 	path = roles/jnv.unattended-upgrades
 	url = https://github.com/jnv/ansible-role-unattended-upgrades.git
+[submodule "roles/github-latest-release"]
+	path = roles/github-latest-release
+	url = https://github.com/mwpastore/ansible-role-github-latest-release.git
