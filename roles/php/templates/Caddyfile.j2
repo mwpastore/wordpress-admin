@@ -27,6 +27,26 @@
 
   tls off
 
+  proxy / localhost:2021 {
+    # The Host header gets unset coming into this vhost, so re-set it here.
+    # Other headers such as X-Forwarded-Proto will be passed-thru as-is.
+    header_upstream Host {host}
+  }
+
+  {% if caddy_search -%}
+  filter rule {
+    content_type (?:text|javascript)
+    search_pattern https?://{{ caddy_search }}
+    replacement https://{{ caddy_domain }}
+  }
+  {%- endif %}
+}
+
+{{ caddy_domain }}:2021{% for item in caddy_domain_aliases %}, {{ item }}:2021{% endfor %} {
+  bind localhost
+
+  tls off
+
   errors {
     log {{ caddy_root }}/logs/error.log {
       size 20
@@ -53,12 +73,4 @@
   }
 
   header /assets Cache-Control "max-age=2592000, s-maxage=86400"
-
-  {% if caddy_search -%}
-  filter rule {
-    content_type (?:text|javascript)
-    search_pattern https?://{{ caddy_search }}
-    replacement https://{{ caddy_domain }}
-  }
-  {%- endif %}
 }
