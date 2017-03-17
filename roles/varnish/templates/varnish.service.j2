@@ -1,4 +1,6 @@
 [Service]
+Type=simple
+
 ExecStart=
 ExecStart=/usr/sbin/varnishd -j unix,user=vcache -F \
   -a localhost:6081 -T localhost:6082 \

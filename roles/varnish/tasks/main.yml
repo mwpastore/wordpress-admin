@@ -1,4 +1,12 @@
 ---
+- apt_key:
+    url: https://packagecloud.io/varnishcache/varnish5/gpgkey
+
+- apt_repository:
+    repo: deb https://packagecloud.io/varnishcache/varnish5/ubuntu {{ ansible_distribution_release }} main
+    filename: varnish
+    update_cache: yes
+
 - apt: name={{ item }}
   with_items:
     - varnish
