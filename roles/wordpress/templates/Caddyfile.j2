@@ -86,39 +86,6 @@
 
   tls off
 
-  proxy / localhost:2021 {
-    # The Host header gets unset coming into this vhost, so re-set it here.
-    # Other headers such as X-Forwarded-Proto will be passed-thru as-is.
-    header_upstream Host {host}
-
-    {% if not caddy_xmlrpc -%}
-    # XML-RPC is disabled, so delete the header that points to it.
-    header_downstream -X-Pingback
-    {%- endif %}
-  }
-
-  {% if caddy_search -%}
-  filter rule {
-    content_type (?:text|javascript)
-    search_pattern https?://{{ caddy_search }}
-    replacement https://{{ caddy_domain }}
-  }
-  {%- endif %}
-
-  {% if wp_content -%}
-  filter rule {
-    content_type (?:text|javascript)
-    search_pattern /wp-content
-    replacement {{ wp_content }}
-  }
-  {%- endif %}
-}
-
-{{ caddy_domain }}:2021 {
-  bind localhost
-
-  tls off
-
   errors {{ caddy_root }}/logs/error.log {
     rotate_size 20
     rotate_age 180
@@ -147,4 +114,25 @@
   header /downloads Cache-Control "max-age=2592000, s-maxage=86400"
   header /wp-content Cache-Control "max-age=2592000, s-maxage=86400"
   header /wp-includes Cache-Control "max-age=2592000, s-maxage=86400"
+
+  {% if not caddy_xmlrpc -%}
+  # XML-RPC is disabled, so delete the header that points to it.
+  header / -X-Pingback
+  {%- endif %}
+
+  {% if caddy_search -%}
+  filter rule {
+    content_type (?:text|javascript)
+    search_pattern https?://{{ caddy_search }}
+    replacement https://{{ caddy_domain }}
+  }
+  {%- endif %}
+
+  {% if wp_content -%}
+  filter rule {
+    content_type (?:text|javascript)
+    search_pattern /wp-content
+    replacement {{ wp_content }}
+  }
+  {%- endif %}
 }
