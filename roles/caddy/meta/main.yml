@@ -5,6 +5,9 @@ dependencies:
   - goaccess
   - role: antoiner77.caddy
     caddy_features: http.ipfilter,http.filter,http.ratelimit,http.git
+    caddy_setcap: yes
+    caddy_systemd_capabilities_enabled: no
+    caddy_systemd_capabilities: CAP_NET_BIND_SERVICE
     caddy_config: |
       import vhosts/*.conf
 
