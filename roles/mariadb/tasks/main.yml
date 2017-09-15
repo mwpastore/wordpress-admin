@@ -4,13 +4,13 @@
     id: '0xF1656F24C74CD1D8'
 
 - apt_repository:
-    repo: deb [arch=amd64,i386,ppc64el] http://mirror.jaleco.com/mariadb/repo/10.1/ubuntu xenial main
+    repo: deb [arch=amd64,i386] http://mirror.jaleco.com/mariadb/repo/10.1/ubuntu {{ ansible_distribution_release }} main
     filename: mariadb
     state: absent
     update_cache: yes
 
 - apt_repository:
-    repo: deb [arch=amd64,i386] http://mirror.jaleco.com/mariadb/repo/10.1/ubuntu {{ ansible_distribution_release }} main
+    repo: deb [arch=amd64,i386] http://mirror.jaleco.com/mariadb/repo/10.2/ubuntu {{ ansible_distribution_release }} main
     filename: mariadb
     update_cache: yes
 
