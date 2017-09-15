@@ -5,10 +5,9 @@
   } {%- endif %}
 
   log / {{ caddy_root }}/logs/access.log "{combined}" {
-    rotate {
-      size 100
-      age 180
-    }
+    rotate_size 100
+    rotate_age 180
+    rotate_compress
   }
 
   {% if caddy_basicauth -%}
@@ -47,11 +46,10 @@
 
   tls off
 
-  errors {
-    log {{ caddy_root }}/logs/error.log {
-      size 20
-      age 180
-    }
+  errors {{ caddy_root }}/logs/error.log {
+    rotate_size 20
+    rotate_age 180
+    rotate_compress
   }
 
   root {{ caddy_root }}/html{{ php_htdocs }}
