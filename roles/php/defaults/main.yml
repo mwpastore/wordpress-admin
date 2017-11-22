@@ -1,7 +1,7 @@
 ---
 docker_image: 7.0-fpm-alpine
 php_htdocs: ~
-caddy_root: /var/www/{{ name }}
+caddy_root: /var/www/{{ sitename }}
 caddy_domain_aliases: []
 caddy_email: "{{ admin_email }}"
 caddy_search: ~

@@ -5,5 +5,6 @@ ExecStart=
 ExecStart=/usr/sbin/varnishd -j unix,user=vcache -F \
   -a localhost:6081 -T localhost:6082 \
   -f /etc/varnish/default.vcl -S /etc/varnish/secret \
+  -p http_max_hdr=256 \
   -s dynamic=malloc,{{ varnish_dynamic_size }}m \
   -s static=file,/var/lib/varnish,{{ varnish_static_size }}m

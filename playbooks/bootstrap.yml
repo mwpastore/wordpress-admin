@@ -37,7 +37,7 @@
         state: restarted
   tasks:
     - name: Import users lookup
-      include_vars: file=../users.yml name=users
+      include_vars: file=../../users.yml name=users
     - name: Ensure passwordless sudo for members of the sudo group
       lineinfile:
         dest: /etc/sudoers
@@ -63,10 +63,21 @@
     - name: Lock root password
       user: name=root password='!'
     - name: Disable SSH as root and/or with password authentication
-      replace:
+      lineinfile:
         dest: /etc/ssh/sshd_config
-        regexp: '^#?(PermitRootLogin|PasswordAuthentication)\s+.*$'
-        replace: '\1 no'
+        regexp: "^#?{{ item }}\\s+"
+        line: "{{ item }} no"
+        validate: 'sshd -f %s -t'
+      with_items:
+        - PermitRootLogin
+        - PasswordAuthentication
+      notify: Restart SSHd
+    - name: Whitelist SSH users
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^AllowUsers\s+'
+        line: "AllowUsers {{users.keys()|sort|join(' ')}}"
+        insertafter: '^PermitRootLogin\s+'
         validate: 'sshd -f %s -t'
       notify: Restart SSHd
     - name: Allow rate-limited OpenSSH traffic

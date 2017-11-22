@@ -1,4 +1,8 @@
 ---
+- apt: name={{ item }}
+  with_items:
+    - ruby-bundler
+
 - mysql_db:
     name: "{{ db_name }}"
 
@@ -22,7 +26,7 @@
     - logs
 
 - copy: src=php.ini dest={{ caddy_root }}/php.ini
-  notify: restart {{ name }}
+  notify: restart {{ sitename }}
 
 - template:
     src: Caddyfile.j2
@@ -32,14 +36,14 @@
 
 - file:
     src: "{{ caddy_root }}/Caddyfile"
-    dest: /etc/caddy/vhosts/{{ name }}.conf
+    dest: /etc/caddy/vhosts/{{ sitename }}.conf
     state: link
 
-- template: dest=/etc/systemd/system/wordpress-{{ name }}.service src=wordpress.service.j2
+- template: dest=/etc/systemd/system/wordpress-{{ sitename }}.service src=wordpress.service.j2
   notify:
     - reload systemd
-    - restart {{ name }}
+    - restart {{ sitename }}
 
 - meta: flush_handlers
 
-- service: name=wordpress-{{ name }} state=started enabled=yes
+- service: name=wordpress-{{ sitename }} state=started enabled=yes

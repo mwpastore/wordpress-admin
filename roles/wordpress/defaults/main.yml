@@ -1,8 +1,8 @@
 ---
-db_name: "{{ name }}"
-docker_image: php7.0-fpm-alpine
+db_name: "{{ sitename }}"
+docker_image: php7.1-fpm-alpine
 php_htdocs: ~
-caddy_root: /var/www/{{ name }}
+caddy_root: /var/www/{{ sitename }}
 caddy_domain_aliases: []
 caddy_email: "{{ admin_email }}"
 caddy_allow: ~
@@ -12,4 +12,6 @@ caddy_xmlrpc: no
 caddy_users: no
 caddy_ie8: no
 caddy_git: ~
-wp_content: ~
+wp_content: /wp-content
+wp_siteurl: ~
+in_development: false

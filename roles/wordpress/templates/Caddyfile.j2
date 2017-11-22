@@ -25,18 +25,18 @@
   }
 
   {% if caddy_allow -%}
-  ipfilter /wp-admin {%- if not caddy_users %} /wp-login.php {%- endif %} {
+  ipfilter {{ wp_siteurl }}/wp-admin {%- if not caddy_users %} {{ wp_siteurl }}/wp-login.php {%- endif %} {
     rule allow
     ip {{ caddy_allow }}
     strict
   }
 
-  ipfilter /wp-admin/admin-ajax.php {
+  ipfilter {{ wp_siteurl }}/wp-admin/admin-ajax.php {
     rule block # disallow nobody, i.e. allow everybody
   }
   {%- endif %}
 
-  ratelimit /wp-login.php 5 7 minute
+  ratelimit {{ wp_siteurl }}/wp-login.php 5 7 minute
 
   {% if caddy_basicauth -%}
   basicauth {{ caddy_basicauth }}
@@ -44,37 +44,30 @@
 
   internal /.sucuriquarantine
 
-  internal /wp-content/updraft
-  internal /wp-content/uploads/pb_backupbuddy/fileoptions
-  internal /wp-content/uploads/sucuri
+  internal {{ wp_content }}/updraft
+  internal {{ wp_content }}/uploads/pb_backupbuddy/fileoptions
+  internal {{ wp_content }}/uploads/sucuri
 
   internal /wp-config.php
   {% if not caddy_xmlrpc -%}
-  internal /xmlrpc.php
+  internal {{ wp_siteurl }}/xmlrpc.php
   {%- endif %}
 
-  rewrite /wp-content {
+  rewrite {{ wp_content }} {
     ext .php
-    if {path} not /wp-content/plugins/wp-ui/css/css.php
+    if {rewrite_path} not {{ wp_content }}/plugins/wp-ui/css/css.php
     to /index.php
   }
 
-  rewrite /wp-content/plugins/sucuri-scanner {
+  rewrite {{ wp_content }}/plugins/sucuri-scanner {
     ext !.gif !.jpeg !.jpg !.png !.css !.js
     to /index.php
   }
 
-  {% if wp_content -%}
-  rewrite /wp-content {
-    regexp (.*)
-    to {{ wp_content }}{1}
-  }
-  {%- endif %}
-
-  rewrite /wp-includes {
+  rewrite {{ wp_siteurl }}/wp-includes {
     ext .php
-    if {path} not /wp-includes/js/tinymce/wp-tinymce.php
-    if {path} not /wp-includes/ms-files.php
+    if {rewrite_path} not {{ wp_siteurl }}/wp-includes/js/tinymce/wp-tinymce.php
+    if {rewrite_path} not {{ wp_siteurl }}/wp-includes/ms-files.php
     to /index.php
   }
 
@@ -105,17 +98,24 @@
   {%- endif %}
 
   rewrite {
-    if {path} not_match ^/wp-admin
-    to {path} {path}/ /index.php?_url={uri}
+    if {rewrite_path} not_starts_with {{ wp_siteurl }}/wp-admin
+    to {rewrite_path} {rewrite_path}/ /index.php?_url={rewrite_path_escaped}&{query}{fragment}
   }
 
   fastcgi / {{ php_ip }}:9000 php {
     root /var/www/html{{ php_htdocs }}
   }
 
+  {% if not in_development -%}
   header /downloads Cache-Control "max-age=2592000, s-maxage=86400"
   header /wp-content Cache-Control "max-age=2592000, s-maxage=86400"
   header /wp-includes Cache-Control "max-age=2592000, s-maxage=86400"
+  {% else -%}
+  header / -Cache-Control
+  header / -ETag
+  header / -Expires
+  header / -Last-Modified
+  {%- endif %}
 
   {% if not caddy_xmlrpc -%}
   # XML-RPC is disabled, so delete the header that points to it.
@@ -130,11 +130,11 @@
   }
   {%- endif %}
 
-  {% if wp_content -%}
+  {% if wp_content != '/wp-content' -%}
   filter rule {
     content_type (?:text|javascript)
-    search_pattern /wp-content
-    replacement {{ wp_content }}
+    search_pattern /wp-content/
+    replacement {{ wp_content }}/
   }
   {%- endif %}
 }
