@@ -52,7 +52,7 @@
         uid: "{{ item.value.uid }}"
         shell: /bin/bash
         group: users
-        groups: sudo{{ ',' + item.value.groups if 'groups' in item.value else '' }}
+        groups: sudo{{ ',' + item.value.groups|join(',') if 'groups' in item.value else '' }}
       with_dict: "{{ users }}"
     - name: Create or update users' authorized_keys from GitHub
       authorized_key:
