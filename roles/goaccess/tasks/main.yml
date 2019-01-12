@@ -9,8 +9,8 @@
 
 - meta: flush_handlers
 
-- apt: name={{ item }}
-  with_items:
-    - geoip-database-contrib
-    - goaccess
-    - libgeoip1
+- apt:
+    name:
+      - geoip-database-contrib
+      - goaccess
+      - libgeoip1

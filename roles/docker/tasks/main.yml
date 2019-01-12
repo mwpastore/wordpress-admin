@@ -31,12 +31,12 @@
     mode: 0755
   changed_when: no
 
-- apt: name={{ item }}
-  with_items:
-    - docker-ce
-    - dmsetup
-    - python-docker
-    - systemd-docker
+- apt:
+    name:
+      - docker-ce
+      - dmsetup
+      - python-docker
+      - systemd-docker
   register: packages
 
 - file: path=/usr/sbin/policy-rc.d state=absent

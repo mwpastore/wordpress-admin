@@ -14,11 +14,11 @@
     filename: mariadb
     update_cache: yes
 
-- apt: name={{ item }}
-  with_items:
-    - mariadb-server
-    - python-mysqldb
-    - python-pexpect
+- apt:
+    name:
+      - mariadb-server
+      - python-mysqldb
+      - python-pexpect
 
 - stat: path=/var/lib/mysql/installation_secured
   register: installation_secured

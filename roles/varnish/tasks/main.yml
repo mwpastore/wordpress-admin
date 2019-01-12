@@ -7,9 +7,9 @@
     filename: varnish
     update_cache: yes
 
-- apt: name={{ item }}
-  with_items:
-    - varnish
+- apt:
+    name:
+      - varnish
 
 - template: src=default.vcl.j2 dest=/etc/varnish/default.vcl
   notify: reload varnish

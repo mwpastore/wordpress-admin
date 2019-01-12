@@ -1,14 +1,16 @@
 ---
-- apt: name={{ item }} state=absent purge=yes
-  with_items:
-    - grub-pc
-    - linux-image-generic
-    - linux-image-virtual
-    - lvm2
-    - lxcfs
-    - mdadm
-    - open-iscsi
-    - snapd
+- apt:
+    name:
+      - grub-pc
+      - linux-image-generic
+      - linux-image-virtual
+      - lvm2
+      - lxcfs
+      - mdadm
+      - open-iscsi
+      - snapd
+    state: absent
+    purge: yes
   register: remove_result
 
 # autoremove in apt module doesn't work unless you specify a package name?
@@ -21,14 +23,14 @@
 
 - apt: upgrade=dist update_cache=yes cache_valid_time=1800
 
-- apt: name={{ item }}
-  with_items:
-    - apt-transport-https
-    - ca-certificates
-    - htop
-    - landscape-common
-    - software-properties-common
-    - vim-nox
+- apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - htop
+      - landscape-common
+      - software-properties-common
+      - vim-nox
 
 - file: src=/usr/share/zoneinfo/Etc/UTC dest=/etc/localtime state=link force=yes
   notify: reconfigure tzdata
