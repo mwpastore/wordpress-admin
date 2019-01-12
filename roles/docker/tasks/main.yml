@@ -20,6 +20,8 @@
 
 - file: dest=/etc/systemd/system/docker.service.d state=directory
 
+- file: dest=/etc/systemd/system/containerd.service.d state=directory
+
 - copy:
     content: |
       #!/bin/sh
@@ -47,6 +49,11 @@
   notify:
     - reload systemd
     - restart docker
+
+- template: dest=/etc/systemd/system/containerd.service.d/override.conf src=containerd.service.j2
+  notify:
+    - reload systemd
+    - restart containerd
 
 - service: name=docker state=started enabled=yes
 
