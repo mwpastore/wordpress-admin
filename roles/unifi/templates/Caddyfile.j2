@@ -1,0 +1,32 @@
+unifi.oobak.net, unifi.oobak.net:8443 {
+  tls mike@oobak.org
+
+  gzip
+
+  proxy /wss https://172.18.100.100:8443 {
+    insecure_skip_verify
+    websocket
+  }
+
+  proxy / https://172.18.100.100:8443 {
+    insecure_skip_verify
+    transparent
+  }
+}
+
+unifi.oobak.net:8880 {
+  tls off
+
+  redir / https://{hostonly}:8843{uri} 301
+}
+
+unifi.oobak.net:8843 {
+  tls mike@oobak.org
+
+  gzip
+
+  proxy / https://172.18.100.100:8843 {
+    insecure_skip_verify
+    transparent
+  }
+}

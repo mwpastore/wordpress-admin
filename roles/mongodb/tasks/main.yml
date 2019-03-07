@@ -1,0 +1,47 @@
+---
+- apt:
+    name: xfsprogs
+    state: present
+
+- filesystem:
+    dev: /dev/disk/by-id/scsi-0Linode_Volume_mongodbdata
+    fstype: xfs
+    opts: -L mongodbdata
+
+- mount:
+    src: /dev/disk/by-id/scsi-0Linode_Volume_mongodbdata
+    path: /var/lib/mongodb
+    state: mounted
+    fstype: xfs
+    dump: 1
+    passno: 1
+    opts: lazytime
+
+- docker_container:
+    name: mongodb
+    dns_search_domains:
+      - oobak.net
+    volumes:
+      - "/var/lib/mongodb:/data/db"
+    image: "mongo:4.0"
+    command: --directoryperdb
+    restart_policy: unless-stopped
+
+- copy:
+    content: |
+      #!/bin/sh
+    dest: /etc/rc.local
+    force: no
+    mode: 0755
+
+- blockinfile:
+    path: /etc/rc.local
+    marker: "# {mark} ANSIBLE MANAGED BLOCK (disable transparent hugepages)"
+    block: |
+      hugeadm --thp-never
+
+- blockinfile:
+    path: /etc/rc.local
+    marker: "# {mark} ANSIBLE MANAGED BLOCK (disable readahead for mongodb)"
+    block: |
+      blockdev --setra 0 /dev/disk/by-id/scsi-0Linode_Volume_mongodbdata

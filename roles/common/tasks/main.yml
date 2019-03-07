@@ -42,6 +42,7 @@
       - apt-transport-https
       - ca-certificates
       - htop
+      - hugepages
       - landscape-common
       - software-properties-common
       - tmux

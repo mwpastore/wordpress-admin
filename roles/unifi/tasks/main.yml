@@ -1,0 +1,78 @@
+---
+- file:
+    path: /var/lib/unifi
+    state: directory
+    owner: 750
+    group: 750
+
+- file:
+    path: /var/log/unifi
+    state: directory
+    owner: 750
+    group: 750
+
+- docker_container:
+    name: unifi
+    dns_search_domains:
+      - oobak.net
+    env:
+      TZ: America/Chicago
+      BIND_PRIV: "false"
+      RUNAS_UID0: "false"
+      UNIFI_UID: "750"
+      UNIFI_GID: "750"
+      DB_NAME: unifi
+      DB_URI: "mongodb://mongodb/unifi"
+      STATDB_URI: "mongodb://mongodb/unifi_stat"
+    links:
+      - mongodb
+    volumes:
+      - /var/lib/unifi:/unifi/data
+      - /var/log/unifi:/unifi/log
+    networks:
+      - name: bridge-static
+        ipv4_address: 172.18.100.100
+      - name: bridge
+    ports:
+      - "3478:3478/udp"
+      - "8080:8080"
+      - "6789:6789"
+    purge_networks: yes
+    image: "jacobalberty/unifi:stable"
+    init: yes
+    restart_policy: unless-stopped
+
+- template:
+    src: Caddyfile.j2
+    dest: /etc/caddy/vhosts/unifi.conf
+  notify: reload caddy
+
+- name: permit UniFi controller access
+  ufw:
+    rule: allow
+    proto: tcp
+    port: 8443
+
+- name: permit UniFi guest portal access (redirect only)
+  ufw:
+    rule: limit
+    proto: tcp
+    port: 8880
+
+- name: permit UniFi guest portal access
+  ufw:
+    rule: allow
+    proto: tcp
+    port: 8843
+
+- name: permit UniFi inform packets
+  ufw:
+    rule: limit
+    proto: tcp
+    port: 8080
+
+- name: permit UniFi STUN packets
+  ufw:
+    rule: limit
+    proto: udp
+    port: 3478
