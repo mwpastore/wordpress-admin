@@ -22,5 +22,4 @@
     - restart varnish
 
 - service: name=varnish state=started enabled=yes
-- service: name=varnishlog state=stopped enabled=no
 - service: name=varnishncsa state=stopped enabled=no

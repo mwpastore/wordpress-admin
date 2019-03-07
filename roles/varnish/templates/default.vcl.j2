@@ -1,8 +1,22 @@
 vcl 4.0;
 
+acl local {
+    "localhost";
+}
+
 backend default {
     .host = "localhost";
     .port = "2020";
+}
+
+sub vcl_recv {
+    if (req.method == "PURGE") {
+        if (client.ip ~ local) {
+            return(purge);
+        }
+
+        return(synth(405, "Not allowed."));
+    }
 }
 
 sub vcl_backend_response {
