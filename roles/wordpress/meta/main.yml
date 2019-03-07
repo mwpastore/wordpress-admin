@@ -1,7 +1,3 @@
 ---
 dependencies:
-  - common
-  - caddy
-  - docker
-  - mariadb
-  - varnish
+  - wordpress-common

@@ -1,8 +1,6 @@
 ---
 dependencies:
-  - common
   - www-data
-  - goaccess
   - role: antoiner77.caddy
     caddy_features: http.ipfilter,http.filter,http.ratelimit,http.git
     caddy_setcap: yes

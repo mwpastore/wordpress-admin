@@ -1,3 +1,4 @@
 ---
 dependencies:
+  - mariadb
   - php-common

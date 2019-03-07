@@ -1,8 +1,4 @@
 ---
-- apt:
-    name:
-      - ruby-bundler
-
 - mysql_db:
     name: "{{ db_name }}"
 

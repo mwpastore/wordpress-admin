@@ -1,0 +1,6 @@
+---
+- apt:
+    name:
+      - ruby-bundler
+
+- ufw: rule=allow direction=in if=docker1 port=3306

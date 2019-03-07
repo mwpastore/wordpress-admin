@@ -73,3 +73,5 @@
   with_items: "{{ users.keys() }}"
 
 - copy: src=docker-update.sh dest=/etc/cron.daily/docker-update mode=0755
+
+- ufw: rule=limit direction=in if=docker1 name=Postfix
