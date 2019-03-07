@@ -44,8 +44,8 @@
 
 - lineinfile:
     dest: /etc/hosts
-    regexp: "^{{ hostvars[item]['ansible_ssh_host'] }}"
-    line: "{{ hostvars[item]['ansible_ssh_host'] }} {{ item }}.{{ ansible_domain }} {{ item }}"
+    regexp: "^{{ hostvars[item]['ansible_host'] }}"
+    line: "{{ hostvars[item]['ansible_host'] }} {{ item }}.{{ ansible_domain }} {{ item }}"
     insertafter: "^127.0.0.1"
   with_items: "{{ groups['all'] }}"
 
