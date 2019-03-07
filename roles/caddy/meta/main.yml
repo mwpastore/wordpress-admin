@@ -8,9 +8,3 @@ dependencies:
     caddy_systemd_capabilities: CAP_NET_BIND_SERVICE
     caddy_config: |
       import vhosts/*.conf
-
-      localhost:8080 {
-        tls off
-        root /var/www/phpMyAdmin
-        fastcgi / localhost:9000 php
-      }
