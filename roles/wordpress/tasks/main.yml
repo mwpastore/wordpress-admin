@@ -35,6 +35,8 @@
     networks:
       - name: bridge-static
         ipv4_address: "{{ php_ip }}"
+    etc_hosts:
+      mysql: 172.18.0.1
     image: wordpress:{{ docker_image }}
     working_dir: /var/www/html{{ php_htdocs }}{{ wp_siteurl }}
     command: -- php-fpm

@@ -6,6 +6,11 @@
 - apt_repository:
     repo: deb [arch=amd64,i386] http://mirror.jaleco.com/mariadb/repo/10.2/ubuntu {{ ansible_distribution_release }} main
     filename: mariadb
+    state: absent
+
+- apt_repository:
+    repo: deb [arch=amd64] http://mirror.jaleco.com/mariadb/repo/10.3/ubuntu {{ ansible_distribution_release }} main
+    filename: mariadb
     update_cache: yes
 
 - apt:
@@ -29,6 +34,24 @@
   notify: restart mariadb
 
 - service: name=mariadb state=started enabled=yes
+
+- meta: flush_handlers
+
+- name: disallow root access via TCP/IP
+  mysql_user:
+    name: root
+    host: "{{ ip }}"
+    state: absent
+  loop:
+    - 127.0.0.1
+    - "::1"
+  loop_control:
+    loop_var: ip
+
+- mysql_user:
+    name: root
+    host: ::1
+    state: absent
 
 - copy: content= dest=/etc/mysql/backup.txt force=no
 
