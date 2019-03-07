@@ -1,11 +1,11 @@
 ---
 - group:
     name: www-data
-    gid: 82
+    gid: 33
 
 - user:
     name: www-data
-    uid: 82
+    uid: 33
     group: www-data
     home: /home/caddy
     shell: /usr/sbin/nologin

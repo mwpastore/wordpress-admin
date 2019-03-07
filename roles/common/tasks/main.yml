@@ -1,20 +1,34 @@
 ---
 - apt:
     name:
+      - bcache-tools
+      - btrfs-tools
+      - btrfs-progs
+      - crda
+      - grub-common
+      - grub-legacy-ec2
       - grub-pc
+      - iw
+      - linux-image-*-generic
+      - linux-modules-*-generic
+      - linux-headers-*-generic
       - linux-image-generic
       - linux-image-virtual
+      - linux-headers-generic
+      - linux
       - lvm2
       - lxcfs
       - mdadm
       - open-iscsi
+      - open-vm-tools
       - snapd
+      - squashfs-tools
     state: absent
     purge: yes
   register: remove_result
 
 # autoremove in apt module doesn't work unless you specify a package name?
-- command: apt-get -y autoremove --purge
+- command: apt-get -yq autoremove --purge
   environment:
     DEBIAN_FRONTEND: noninteractive
   when: remove_result.changed
@@ -30,6 +44,7 @@
       - htop
       - landscape-common
       - software-properties-common
+      - tmux
       - vim-nox
 
 - file: src=/usr/share/zoneinfo/Etc/UTC dest=/etc/localtime state=link force=yes

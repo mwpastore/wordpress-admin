@@ -11,7 +11,19 @@
     - logs
 
 - copy: src=php.ini dest={{ caddy_root }}/php.ini
-  notify: restart {{ sitename }}
+
+- docker_container:
+    name: php-{{ sitename }}
+    dns_search_domains:
+      - oobak.net
+    volumes:
+      - "{{ caddy_root }}/php.ini:/usr/local/etc/php/php.ini:ro"
+      - "{{ caddy_root }}/html:/var/www/html"
+    networks:
+      - name: bridge-static
+        ipv4_address: "{{ php_ip }}"
+    image: php:{{ docker_image }}
+    restart_policy: unless-stopped
 
 - template:
     src: Caddyfile.j2
@@ -23,14 +35,4 @@
     src: "{{ caddy_root }}/Caddyfile"
     dest: /etc/caddy/vhosts/{{ sitename }}.conf
     state: link
-
-- file: dest=/etc/systemd/system/caddy.service.d state=directory
-
-- template: dest=/etc/systemd/system/php-{{ sitename }}.service src=php.service.j2
-  notify:
-    - reload systemd
-    - restart {{ sitename }}
-
-- meta: flush_handlers
-
-- service: name=php-{{ sitename }} state=started enabled=yes
+  notify: reload caddy

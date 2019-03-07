@@ -24,7 +24,21 @@
     - logs
 
 - copy: src=php.ini dest={{ caddy_root }}/php.ini
-  notify: restart {{ sitename }}
+
+- docker_container:
+    name: wordpress-{{ sitename }}
+    dns_search_domains:
+      - oobak.net
+    volumes:
+      - "{{ caddy_root }}/php.ini:/usr/local/etc/php/php.ini:ro"
+      - "{{ caddy_root }}/wordpress:/var/www/html"
+    networks:
+      - name: bridge-static
+        ipv4_address: "{{ php_ip }}"
+    image: wordpress:{{ docker_image }}
+    working_dir: /var/www/html{{ php_htdocs }}{{ wp_siteurl }}
+    command: -- php-fpm
+    restart_policy: unless-stopped
 
 - template:
     src: Caddyfile.j2
@@ -36,12 +50,4 @@
     src: "{{ caddy_root }}/Caddyfile"
     dest: /etc/caddy/vhosts/{{ sitename }}.conf
     state: link
-
-- template: dest=/etc/systemd/system/wordpress-{{ sitename }}.service src=wordpress.service.j2
-  notify:
-    - reload systemd
-    - restart {{ sitename }}
-
-- meta: flush_handlers
-
-- service: name=wordpress-{{ sitename }} state=started enabled=yes
+  notify: reload caddy

@@ -11,8 +11,8 @@
 - apt:
     name:
       - mariadb-server
-      - python-mysqldb
-      - python-pexpect
+      - python3-mysqldb
+      - python3-pexpect
 
 - stat: path=/var/lib/mysql/installation_secured
   register: installation_secured

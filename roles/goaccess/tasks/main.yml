@@ -11,6 +11,4 @@
 
 - apt:
     name:
-      - geoip-database-contrib
       - goaccess
-      - libgeoip1

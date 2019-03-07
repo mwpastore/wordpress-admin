@@ -8,60 +8,53 @@
     filename: docker
     update_cache: yes
 
-- file: dest=/etc/systemd/system/docker.service.d state=directory
-
-- file: dest=/etc/systemd/system/containerd.service.d state=directory
-
-- copy:
-    content: |
-      #!/bin/sh
-      echo "All runlevel operations denied by policy" >&2
-      exit 101
-    dest: /usr/sbin/policy-rc.d
-    mode: 0755
-  changed_when: no
-
 - apt:
     name:
       - docker-ce
-      - dmsetup
-      - python-docker
-      - systemd-docker
+      - python3-docker
   register: packages
-
-- file: path=/usr/sbin/policy-rc.d state=absent
-  changed_when: no
-
-- command: dmsetup mknodes
-  when: packages.changed
-
-- template: dest=/etc/systemd/system/docker.service.d/override.conf src=docker.service.j2
-  notify:
-    - reload systemd
-    - restart docker
-
-- template: dest=/etc/systemd/system/containerd.service.d/override.conf src=containerd.service.j2
-  notify:
-    - reload systemd
-    - restart containerd
 
 - service: name=docker state=started enabled=yes
 
+- docker_container:
+    name: watchtower
+    env:
+      WATCHTOWER_NOTIFICATIONS_LEVEL: warn
+      WATCHTOWER_NOTIFICATIONS: email
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: 172.17.0.1
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_TLS_SKIP_VERIFY: "true"
+    dns_search_domains:
+      - oobak.net
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    image: v2tec/watchtower
+    command: --cleanup
+    restart_policy: unless-stopped
+
+- include_vars: file={{ lookup('env', 'PWD') }}/users.yml
+
+- user:
+    name: "{{ item.name }}"
+    groups: docker
+    append: yes
+  loop: "{{ users }}"
+
 - docker_network:
-    name: wordpress
+    name: bridge-static
     driver_options:
       com.docker.network.bridge.name: docker1
     ipam_options:
       subnet: 172.18.0.0/16
 
-- include_vars: file=../../../../users.yml name=users
+- file: dest=/etc/systemd/system/postfix@-.service.d state=directory
 
-- user:
-    name: "{{ item }}"
-    groups: docker
-    append: yes
-  with_items: "{{ users.keys() }}"
-
-- copy: src=docker-update.sh dest=/etc/cron.daily/docker-update mode=0755
+- ini_file:
+    path: /etc/systemd/system/postfix@-.service.d/override.conf
+    section: Unit
+    option: After
+    value: docker.service
+    no_extra_spaces: yes
+  notify:
+    - reload systemd
 
 - ufw: rule=limit direction=in if=docker1 name=Postfix
