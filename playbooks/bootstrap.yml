@@ -3,84 +3,111 @@
 # Want to do just a new host and not all the hosts? Use the -l (--limit=)
 # option.
 #
-#   ansible-playbook bootstrap.yml -l new-host
+#   ansible-playbook -i hosts.ini playbooks/bootstrap.yml -l new-host
 #
 # Add -k if the root account is password-protected.
 #
-# You may need to start it without and then resume with ansible_ssh_user as
-# described below.
+# Depending on your SSH client configuration, you may need to start this
+# playbook without and then resume with ansible_user as described below. This
+# is especially likely to happen after the root password is locked.
 #
 # Otherwise, if it's not working, maybe the server was already bootstrapped?
 # If you're just trying to create new users and/or update public keys, you can
 # override the remote user on the command-line:
 #
-#   ansible-playbook bootstrap.yml -e ansible_ssh_user=$USER
+#   ansible-playbook -i hosts.ini playbooks/bootstrap.yml -e ansible_user=$USER
 #
 - hosts: all
   gather_facts: no
   vars:
-    ansible_ssh_user: root
+    ansible_user: root
   tasks:
     - name: Install Python 2.x and APT module
-      local_action: command ssh {{ ansible_ssh_user }}@{{ ansible_ssh_host }} {{ 'sudo' if ansible_ssh_user != 'root' else '' }} apt -yq install python python-apt
+      local_action: >
+        command ssh {{ ansible_user }}@{{ hostvars[inventory_hostname].ansible_host }}
+        {{ 'sudo' if ansible_user != 'root' else '' }}
+        apt -yq --no-install-recommends install python python-apt
       register: apt
       changed_when: "'stdout' in apt and 'packages will be installed' in apt.stdout"
 
 - hosts: all
   vars:
-    ansible_ssh_user: root
-  become: "{{ 'no' if ansible_ssh_user == 'root' else 'yes' }}"
+    ansible_user: root
+  become: "{{ 'no' if ansible_user == 'root' else 'yes' }}"
   handlers:
-    - name: Restart SSHd
+    - name: restart sshd
       service:
         name: ssh
         state: restarted
   tasks:
-    - name: Import users lookup
-      include_vars: file=../../users.yml name=users
-    - name: Ensure passwordless sudo for members of the sudo group
+    - name: import users lookup
+      include_vars: file={{ lookup('env', 'PWD') }}/users.yml
+
+    - name: ensure passwordless sudo for members of the sudo group
       lineinfile:
         dest: /etc/sudoers
         regexp: '^(%sudo\s+ALL=\(ALL:ALL\)\s+)(ALL)$'
         line: '\1NOPASSWD:\2'
         backrefs: yes
         validate: 'visudo -cf %s'
-    - name: Create or update users
+
+    - name: create or update users
       user:
-        name: "{{ item.key }}"
-        comment: "{{ item.value.fullname }}"
-        uid: "{{ item.value.uid }}"
+        name: "{{ user.name }}"
+        comment: "{{ user.fullname }}"
+        uid: "{{ user.uid }}"
         shell: /bin/bash
         group: users
-        groups: sudo{{ ',' + item.value.groups|join(',') if 'groups' in item.value else '' }}
-      with_dict: "{{ users }}"
-    - name: Create or update users' authorized_keys from GitHub
+        groups: "{{ user.groups|join(',') if 'groups' in user else '' }}"
+        append: yes
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+        label: "{{ user.name }}"
+
+    - name: create or update users' authorized_keys from GitHub
       authorized_key:
-        user: "{{ item.key }}"
-        key: https://github.com/{{ item.value.github.username }}.keys
+        user: "{{ user.name }}"
+        key: https://github.com/{{ user.github.username }}.keys
         exclusive: yes
-      with_dict: "{{ users }}"
-    - name: Lock root password
-      user: name=root password='!'
-    - name: Disable SSH as root and/or with password authentication
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+        label: "{{ user.name }}"
+      when: "'github' in user"
+
+    - name: lock root password
+      user:
+        name: root
+        password_lock: yes
+
+    - name: disable SSH as root and/or with password authentication
       lineinfile:
         dest: /etc/ssh/sshd_config
         regexp: "^#?{{ item }}\\s+"
         line: "{{ item }} no"
         validate: 'sshd -f %s -t'
-      with_items:
-        - PermitRootLogin
+      loop:
+        - ChallengeResponseAuthentication
         - PasswordAuthentication
-      notify: Restart SSHd
-    - name: Whitelist SSH users
+        - PermitRootLogin
+      notify: restart sshd
+
+    - name: whitelist SSH users
       lineinfile:
-        dest: /etc/ssh/sshd_config
+        path: /etc/ssh/sshd_config
         regexp: '^AllowUsers\s+'
-        line: "AllowUsers {{users.keys()|sort|join(' ')}}"
+        line: "AllowUsers {{ users|selectattr('github', 'defined')|join(' ', attribute='name') }}"
         insertafter: '^PermitRootLogin\s+'
         validate: 'sshd -f %s -t'
-      notify: Restart SSHd
-    - name: Allow rate-limited OpenSSH traffic
-      ufw: rule=limit name=OpenSSH
-    - name: Enable UFW (ip/nftables front-end) (w/o logging)
-      ufw: state=enabled logging=off
+      notify: restart sshd
+
+    - name: allow rate-limited OpenSSH traffic
+      ufw:
+        rule: limit
+        name: OpenSSH
+
+    - name: enable UFW (ip/nftables front-end) (w/o logging)
+      ufw:
+        state: enabled
+        logging: off
