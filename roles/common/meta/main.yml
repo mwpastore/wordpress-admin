@@ -1,6 +1,6 @@
 ---
 dependencies:
-  - role: tersmitten.postfix
+  - role: oefenweb.postfix
     postfix_aliases:
       - { user: root, alias: "{{ admin_email }}" }
     postfix_inet_interfaces: '127.0.0.1, [::1], 172.18.0.1'
