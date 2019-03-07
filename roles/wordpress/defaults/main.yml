@@ -1,6 +1,6 @@
 ---
 db_name: "{{ sitename }}"
-docker_image: php7.1-fpm-alpine
+docker_image: php7.3-fpm
 php_htdocs: ~
 caddy_root: /var/www/{{ sitename }}
 caddy_domain_aliases: []

@@ -1,5 +1,5 @@
 ---
-docker_image: 7.0-fpm-alpine
+docker_image: 7.3-fpm
 php_htdocs: ~
 caddy_root: /var/www/{{ sitename }}
 caddy_domain_aliases: []
