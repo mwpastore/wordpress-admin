@@ -50,7 +50,7 @@ function snapshot {
   local snapshot_db=${source}_snapshot
   local snapshot_file=$BACKUP_DIR/${source}.snapshot.sql
 
-  mysql --execute="CREATE DATABASE IF NOT EXISTS \`$snapshot_db\` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
+  mysql --execute="CREATE DATABASE IF NOT EXISTS \`$snapshot_db\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
   mysql $snapshot_db <${DUMPFILES[$source]}
 
