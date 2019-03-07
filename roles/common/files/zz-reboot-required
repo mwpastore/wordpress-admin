@@ -1,5 +1,0 @@
-#!/bin/sh
-
-if [ -f /var/run/reboot-required ] ; then
-  /sbin/shutdown --reboot +5
-fi

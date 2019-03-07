@@ -49,6 +49,4 @@
     insertafter: "^127.0.0.1"
   with_items: "{{ groups['all'] }}"
 
-- copy: src=zz-reboot-required dest=/etc/cron.daily mode=0755 owner=root group=root
-
 - sysctl: name=vm.swappiness value=1
